@@ -143,3 +143,17 @@ export const updateProfile = async (userId: string, updates: Partial<Profile>) =
     return { data: null, error };
   }
 };
+
+export const deleteProfile = async (userId: string) => {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+};

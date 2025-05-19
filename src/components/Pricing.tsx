@@ -74,7 +74,7 @@ export const Pricing = () => {
         { text: "Rapports d'activité basiques", available: false },
         { text: "Support prioritaire", available: false },
       ],
-      cta: "Commencer l'essai",
+      cta: "Souscrire maintenant",
     },
     {
       name: "Offre Business",
@@ -95,15 +95,7 @@ export const Pricing = () => {
         { text: "Support premium 24/7 dédié", available: true },
         { text: "Rapports d'activité avancés", available: true },
       ],
-      cta: (
-        <a
-          href="#contact"
-          className="text-teal-600 hover:text-teal-700 font-medium block text-center"
-          aria-label="Aller au formulaire de contact en bas de page"
-        >
-          Contactez nous
-        </a>
-      ),
+      cta: "Obtenir un devis",
     },
   ];
 
@@ -197,7 +189,7 @@ export const Pricing = () => {
                   className="w-full mb-6"
                   onClick={() => navigate('/auth')}
                 >
-                  Commencer l'essai
+                  {plan.cta}
                 </Button>
 
                 <ul className="space-y-3">

@@ -10,16 +10,17 @@ import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
-import { AuthForm } from './components/auth/AuthForm';
+
 
 function App() {
+  console.log("App loaded");
   return (
     <Router>
       <div className="min-h-screen bg-white">
         <Helmet />
         <Navbar />
         <Routes>
-          <Route path="/auth" element={<AuthForm />} />
+          
           <Route path="/" element={
             <main>
               <Hero />

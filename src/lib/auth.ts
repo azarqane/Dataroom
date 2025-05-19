@@ -29,13 +29,13 @@ export const signUp = async (email: string, password: string, full_name: string)
       if (!existingProfile) {
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert([
+          .upsert([
             {
               id: authData.user.id,
               email,
               full_name,
             },
-          ]);
+          ], { onConflict: 'id' });
 
         if (profileError) throw profileError;
       }
@@ -97,13 +97,13 @@ export const getProfile = async (userId: string) => {
         if (!checkProfile) {
           const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
-            .insert([
+            .upsert([
               {
                 id: userId,
                 email: userData.user.email,
                 full_name: null,
               },
-            ])
+            ], { onConflict: 'id' })
             .select()
             .single();
 

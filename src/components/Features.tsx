@@ -13,6 +13,7 @@ import {
   History,
   Lock
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -31,6 +32,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
 );
 
 export const Features = () => {
+  const navigate = useNavigate();
+
   const features = [
     {
       icon: <Shield className="h-6 w-6 text-teal-600" />,
@@ -162,14 +165,18 @@ export const Features = () => {
                 Bénéficiez d'une preuve infalsifiable de consultation de vos documents et d'une protection complète contre la copie non autorisée.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button className="bg-white text-blue-900 hover:bg-teal-50 px-6 py-3 rounded-lg font-medium transition-colors">
+                <button 
+                  onClick={() => navigate('/auth')} 
+                  className="bg-white text-blue-900 hover:bg-teal-50 px-6 py-3 rounded-lg font-medium transition-colors"
+                >
                   Démarrer l'essai gratuit
                 </button>
-                <a href="#contact" >
-                <button className="bg-transparent border border-white text-white hover:bg-blue-800 px-6 py-3 rounded-lg font-medium transition-colors">
+                <button 
+                  onClick={() => navigate('/auth')}
+                  className="bg-transparent border border-white text-white hover:bg-blue-800 px-6 py-3 rounded-lg font-medium transition-colors"
+                >
                   Demander une démo
                 </button>
-                </a>
               </div>
             </div>
           </div>

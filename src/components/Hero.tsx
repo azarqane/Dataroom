@@ -1,8 +1,11 @@
 import React from 'react';
 import { Button } from './Button';
 import { Shield, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" id="hero">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50 z-0"></div>
@@ -27,14 +30,12 @@ export const Hero = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button variant="primary" size="lg">
+                <Button variant="primary" size="lg" onClick={() => navigate('/auth')}>
                   Démarrer l'essai gratuit
                 </Button>
-                <a href="#contact" >
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" onClick={() => navigate('/auth')}>
                   Demander une démo
                 </Button>
-              </a>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

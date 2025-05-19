@@ -148,9 +148,7 @@ export const FAQ = () => {
                   <button className="w-full bg-white text-blue-900 hover:bg-teal-100 px-6 py-3 rounded-lg font-medium transition-colors">
                     Démarrer l'essai gratuit
                   </button>
-                  <button className="w-full bg-transparent border border-white text-white hover:bg-blue-800 px-6 py-3 rounded-lg font-medium transition-colors">
-                    Demander une démo
-                  </button>
+                  
                 </div>
               </div>
               <div className="w-full lg:w-1/2 bg-white p-8 lg:p-12" id="contact">

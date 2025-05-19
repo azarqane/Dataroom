@@ -120,12 +120,15 @@ export const Testimonials = () => {
                 Programmez une démo personnalisée avec l'un de nos experts et découvrez comment notre Data Room peut répondre à vos besoins spécifiques.
               </p>
               <div className="flex space-x-4">
+              <a
+  href="#contact"
+  className="bg-white text-blue-900 hover:bg-teal-100 px-4 py-2 rounded-lg font-medium transition-colors inline-block"
+  aria-label="Aller au formulaire de contact pour demander une démo"
+>
                 <button className="bg-white text-blue-900 hover:bg-teal-100 px-4 py-2 rounded-lg font-medium transition-colors">
                   Demander une démo
                 </button>
-                <button className="bg-transparent border border-white text-white hover:bg-blue-700 px-4 py-2 rounded-lg font-medium transition-colors">
-                  Voir le webinar
-                </button>
+              </a>
               </div>
             </div>
             <div className="w-full md:w-1/3">

@@ -64,18 +64,15 @@ export const signOut = async () => {
 
 export const getProfile = async (userId: string) => {
   try {
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      // If no profile is found, return null without throwing an error
-      if (error.code === 'PGRST116') {
-        return { data: null, error: null };
-      }
-      throw error;
+    // If no profile is found or there's an error, return null
+    if (error || !data) {
+      return { data: null, error: null };
     }
 
     return { data, error: null };

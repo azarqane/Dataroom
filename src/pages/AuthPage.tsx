@@ -28,18 +28,26 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         const { data, error } = await signIn(formData.email, formData.password);
-        if (error) throw error;
-        if (data) {
+        if (error) {
+          throw error;
+        }
+        if (data?.user) {
           navigate('/dashboard');
+        } else {
+          throw new Error('Une erreur est survenue lors de la connexion');
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');
         }
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('duplicate key')) {
+            throw new Error('Un compte existe déjà avec cet email');
+          }
+          throw error;
+        }
         if (data) {
-          // Rediriger vers une page de confirmation
           navigate('/auth/confirm');
         }
       }

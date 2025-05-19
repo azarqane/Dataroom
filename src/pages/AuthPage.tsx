@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
-import { signIn, signUp } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
@@ -27,21 +26,16 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        const { data, error } = await signIn(formData.email, formData.password);
-        if (error) throw error;
-        if (data) {
-          navigate('/dashboard');
-        }
+        // Simulate login
+        console.log('Login:', { email: formData.email, password: formData.password });
+        navigate('/dashboard');
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');
         }
-        const { data, error } = await signUp(formData.email, formData.password, formData.name);
-        if (error) throw error;
-        if (data) {
-          // Rediriger vers une page de confirmation
-          navigate('/auth/confirm');
-        }
+        // Simulate signup
+        console.log('Signup:', { email: formData.email, password: formData.password, name: formData.name });
+        navigate('/auth/confirm');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');

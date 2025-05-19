@@ -18,17 +18,27 @@ export const signUp = async (email: string, password: string, full_name: string)
     if (authError) throw authError;
 
     if (authData.user) {
-      const { error: profileError } = await supabase
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            email,
-            full_name,
-          },
-        ]);
+        .select('id')
+        .eq('id', authData.user.id)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      // Only create profile if it doesn't exist
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              email,
+              full_name,
+            },
+          ]);
+
+        if (profileError) throw profileError;
+      }
     }
 
     return { data: authData, error: null };
@@ -77,20 +87,39 @@ export const getProfile = async (userId: string) => {
     if (!data) {
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user) {
-        const { data: newProfile, error: insertError } = await supabase
+        // Check again before inserting to prevent race conditions
+        const { data: checkProfile } = await supabase
           .from('profiles')
-          .insert([
-            {
-              id: userId,
-              email: userData.user.email,
-              full_name: null,
-            },
-          ])
-          .select()
-          .single();
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
 
-        if (insertError) throw insertError;
-        data = newProfile;
+        if (!checkProfile) {
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: userId,
+                email: userData.user.email,
+                full_name: null,
+              },
+            ])
+            .select()
+            .single();
+
+          if (insertError) throw insertError;
+          data = newProfile;
+        } else {
+          // Profile was created between our first and second check
+          const { data: justCreatedProfile, error: fetchError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (fetchError) throw fetchError;
+          data = justCreatedProfile;
+        }
       }
     }
 

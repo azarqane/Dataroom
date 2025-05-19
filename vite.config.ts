@@ -7,7 +7,9 @@ export default defineConfig({
     port: 5173,
     host: true,
     hmr: {
-      clientPort: 5173
+      clientPort: 5173,
+      protocol: 'ws',
+      host: 'localhost'
     }
   }
 });

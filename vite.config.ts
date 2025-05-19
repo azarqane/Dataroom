@@ -6,6 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    hmr: true
+    hmr: {
+      clientPort: 443,
+      host: 'localhost',
+      overlay: false
+    }
   }
 });

@@ -93,6 +93,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="John Doe"
+                    style={{ position: 'relative' }}
                   />
                 </div>
               </div>
@@ -116,6 +117,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="exemple@email.com"
+                  style={{ position: 'relative' }}
                 />
               </div>
             </div>
@@ -138,6 +140,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="••••••••"
+                  style={{ position: 'relative' }}
                 />
               </div>
             </div>
@@ -160,6 +163,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="••••••••"
+                    style={{ position: 'relative' }}
                   />
                 </div>
               </div>

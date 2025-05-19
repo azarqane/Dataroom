@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Testimonial {
   content: string;
@@ -10,6 +11,8 @@ interface Testimonial {
 }
 
 export const Testimonials = () => {
+  const navigate = useNavigate();
+  
   const testimonials: Testimonial[] = [
     {
       content: "NeutVault a révolutionné notre gestion documentaire. Nous pouvons maintenant partager des informations sensibles avec nos clients et partenaires en toute confiance.",
@@ -120,15 +123,12 @@ export const Testimonials = () => {
                 Programmez une démo personnalisée avec l'un de nos experts et découvrez comment notre Data Room peut répondre à vos besoins spécifiques.
               </p>
               <div className="flex space-x-4">
-              <a
-  href="#contact"
-  className="bg-white text-blue-900 hover:bg-teal-100 px-4 py-2 rounded-lg font-medium transition-colors inline-block"
-  aria-label="Aller au formulaire de contact pour demander une démo"
->
-                <button className="bg-white text-blue-900 hover:bg-teal-100 px-4 py-2 rounded-lg font-medium transition-colors">
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="bg-white text-blue-900 hover:bg-teal-100 px-4 py-2 rounded-lg font-medium transition-colors"
+                >
                   Demander une démo
                 </button>
-              </a>
               </div>
             </div>
             <div className="w-full md:w-1/3">
@@ -146,3 +146,5 @@ export const Testimonials = () => {
     </section>
   );
 };
+
+export { Testimonials }

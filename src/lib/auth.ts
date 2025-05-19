@@ -15,12 +15,7 @@ export const signUp = async (email: string, password: string, full_name: string)
       password,
     });
 
-    if (authError) {
-      if (authError.message.includes('User already registered')) {
-        throw new Error('Un compte existe déjà avec cette adresse email');
-      }
-      throw authError;
-    }
+    if (authError) throw authError;
 
     if (authData.user) {
       const { error: profileError } = await supabase
@@ -49,12 +44,7 @@ export const signIn = async (email: string, password: string) => {
       password,
     });
 
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        throw new Error('Email ou mot de passe incorrect');
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     return { data, error: null };
   } catch (error) {
@@ -80,12 +70,7 @@ export const getProfile = async (userId: string) => {
       .eq('id', userId)
       .single();
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return { data: null, error: null };
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     return { data, error: null };
   } catch (error) {

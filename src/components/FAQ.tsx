@@ -128,7 +128,7 @@ export const FAQ = () => {
           
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-gray-600 mb-4">Vous ne trouvez pas la réponse à votre question ?</p>
-            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
+            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium" >
               Contactez nous
             </a>
           </div>

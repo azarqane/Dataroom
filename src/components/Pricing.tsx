@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Check, HelpCircle, Shield, Database, Users } from 'lucide-react';
 import { Button } from './Button';
+import { ReactNode } from 'react';
+
 
 interface PlanFeature {
   text: string;
@@ -14,7 +16,7 @@ interface Plan {
   monthlyPrice: number;
   yearlyPrice: number;
   features: PlanFeature[];
-  cta: string;
+  cta: ReactNode;
   popular?: boolean;
   icon: React.ReactNode;
   highlights: string[];
@@ -22,80 +24,79 @@ interface Plan {
 
 export const Pricing = () => {
   const [annual, setAnnual] = useState(true);
-  
+
   const plans: Plan[] = [
     {
-      name: "Essentiel",
-      description: "Pour les petites équipes avec des besoins basiques",
-      monthlyPrice: 49,
-      yearlyPrice: 490,
+      name: "Offre Essentielle",
+      description: "Pour les indépendants, petites équipes, professions libérales",
+      monthlyPrice: 99,
+      yearlyPrice: 990, // 2 mois offerts
       icon: <Database className="h-6 w-6 text-blue-600" />,
       highlights: [
-        "1 Data Room",
-        "10 Go de stockage",
-        "5 utilisateurs"
+        "1 Data Room active",
+        "50 Go de stockage sécurisé",
+        "Jusqu’à 5 administrateurs",
       ],
       features: [
-        { text: "1 Data Room active", available: true },
-        { text: "10 Go d'espace de stockage", available: true },
-        { text: "Jusqu'à 5 utilisateurs", available: true },
-        { text: "Contrôle d'accès basique", available: true },
-        { text: "Chiffrement AES-256", available: true },
-        { text: "Support par email", available: true },
-        { text: "Historique des accès", available: true },
-        { text: "Rapports d'activité", available: false },
+        { text: "Journalisation blockchain des accès", available: true },
+        { text: "Filigrane dynamique anti-capture d’écran", available: true },
+        { text: "Support email local (9h-18h, jours ouvrés)", available: true },
+        { text: "Essai gratuit 14 jours sans carte bancaire", available: true },
+        { text: "Rapports d'activité basiques", available: false },
         { text: "Support prioritaire", available: false },
       ],
       cta: "Commencer l'essai",
     },
     {
-      name: "Business",
-      description: "Pour les équipes qui gèrent plusieurs projets",
+      name: "Offre Pro",
+      description: "Pour cabinets, agences, PME, professions réglementées",
       monthlyPrice: 149,
       yearlyPrice: 1490,
       icon: <Users className="h-6 w-6 text-teal-600" />,
       popular: true,
       highlights: [
-        "5 Data Rooms",
-        "50 Go de stockage",
-        "25 utilisateurs"
+        "3 Data Rooms actives",
+        "200 Go de stockage sécurisé",
+        "Jusqu’à 15 administrateurs",
       ],
       features: [
-        { text: "5 Data Rooms actives", available: true },
-        { text: "50 Go d'espace de stockage", available: true },
-        { text: "Jusqu'à 25 utilisateurs", available: true },
-        { text: "Contrôle d'accès avancé", available: true },
-        { text: "Chiffrement AES-256", available: true },
-        { text: "Support prioritaire", available: true },
-        { text: "Historique des accès", available: true },
-        { text: "Rapports d'activité", available: true },
-        { text: "Personnalisation de l'interface", available: true },
+        { text: "Traçabilité avancée (audit blockchain, rapports exportables)", available: true },
+        { text: "Blocage téléchargement & impression", available: true },
+        { text: "Watermarking renforcé", available: true },
+        { text: "Formation en ligne offerte", available: true },
+        { text: "Support prioritaire (téléphone + email)", available: true },
+        { text: "Personnalisation de l'interface", available: false },
       ],
-      cta: "Commencer l'essai",
+      cta: "Essayer l’offre Pro",
     },
     {
-      name: "Enterprise",
-      description: "Solution personnalisée pour les grandes organisations",
-      monthlyPrice: 399,
-      yearlyPrice: 3990,
+      name: "Offre Business",
+      description: "Pour bureaux d’études, cabinets d’architectes, groupes multi-sites",
+      monthlyPrice: 169,
+      yearlyPrice: 1690,
       icon: <Shield className="h-6 w-6 text-purple-600" />,
       highlights: [
         "Data Rooms illimitées",
-        "Stockage illimité",
-        "Utilisateurs illimités"
+        "500 Go de stockage sécurisé",
+        "Jusqu’à 30 administrateurs",
       ],
       features: [
-        { text: "Data Rooms illimitées", available: true },
-        { text: "Stockage illimité", available: true },
-        { text: "Utilisateurs illimités", available: true },
-        { text: "Contrôle d'accès personnalisable", available: true },
-        { text: "Chiffrement personnalisé", available: true },
-        { text: "Support 24/7 dédié", available: true },
-        { text: "Historique des accès illimité", available: true },
-        { text: "Rapports personnalisés", available: true },
-        { text: "Solution sur mesure", available: true },
+        { text: "Visualiseur sécurisé (plans, PDF, CAO)", available: true },
+        { text: "Anti-capture d’écran et verrouillage export", available: true },
+        { text: "Watermarking personnalisé", available: true },
+        { text: "Archivage légal 10 ans", available: true },
+        { text: "Support premium 24/7 dédié", available: true },
+        { text: "Rapports d'activité avancés", available: true },
       ],
-      cta: "Contacter les ventes",
+      cta: (
+        <a
+          href="#contact"
+          className="text-teal-600 hover:text-teal-700 font-medium block text-center"
+          aria-label="Aller au formulaire de contact en bas de page"
+        >
+          Contactez nous
+        </a>
+      ),
     },
   ];
 
@@ -107,7 +108,6 @@ export const Pricing = () => {
           <p className="text-xl text-gray-600 mb-8">
             Choisissez le plan qui correspond à votre utilisation des Data Rooms.
           </p>
-          
           <div className="flex items-center justify-center mb-8">
             <div className="bg-gray-100 p-1 rounded-full inline-flex">
               <button
@@ -115,6 +115,7 @@ export const Pricing = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   !annual ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
                 }`}
+                aria-pressed={!annual}
               >
                 Mensuel
               </button>
@@ -123,20 +124,20 @@ export const Pricing = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   annual ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
                 }`}
+                aria-pressed={annual}
               >
-                Annuel <span className="text-teal-600 font-semibold">-16%</span>
+                Annuel <span className="text-teal-600 font-semibold">(2 mois offerts)</span>
               </button>
             </div>
           </div>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
-            <div 
+            <div
               key={index}
               className={`relative rounded-2xl overflow-hidden transition-all ${
-                plan.popular 
-                  ? 'border-2 border-teal-600 shadow-xl scale-105 md:-mt-4 z-10' 
+                plan.popular
+                  ? 'border-2 border-teal-600 shadow-xl scale-105 md:-mt-4 z-10'
                   : 'border border-gray-200 shadow-lg'
               }`}
             >
@@ -145,12 +146,14 @@ export const Pricing = () => {
                   Le plus populaire
                 </div>
               )}
-              
+
               <div className={`bg-white p-8 ${plan.popular ? 'pt-10' : ''}`}>
                 <div className="flex items-center mb-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-4 ${
-                    plan.popular ? 'bg-teal-100' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center mr-4 ${
+                      plan.popular ? 'bg-teal-100' : 'bg-gray-100'
+                    }`}
+                  >
                     {plan.icon}
                   </div>
                   <div>
@@ -158,7 +161,7 @@ export const Pricing = () => {
                     <p className="text-gray-500 text-sm">{plan.description}</p>
                   </div>
                 </div>
-                
+
                 <div className="my-6">
                   <div className="flex items-end">
                     <span className="text-4xl font-bold text-gray-900">
@@ -181,14 +184,11 @@ export const Pricing = () => {
                     </div>
                   ))}
                 </div>
-                
-                <Button 
-                  variant={plan.popular ? 'primary' : 'outline'} 
-                  className="w-full mb-6"
-                >
+
+                <Button variant={plan.popular ? 'primary' : 'outline'} className="w-full mb-6">
                   {plan.cta}
                 </Button>
-                
+
                 <ul className="space-y-3">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start">
@@ -219,7 +219,7 @@ export const Pricing = () => {
             </div>
           ))}
         </div>
-        
+
         <div className="mt-16 max-w-4xl mx-auto bg-gray-50 rounded-2xl p-8 border border-gray-200">
           <div className="flex flex-col md:flex-row items-center">
             <div className="w-full md:w-2/3 mb-6 md:mb-0">
@@ -229,10 +229,12 @@ export const Pricing = () => {
               </p>
             </div>
             <div className="w-full md:w-1/3 md:text-right">
+            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
               <Button variant="secondary">Contactez-nous</Button>
+            </a>
             </div>
           </div>
-          
+
           <div className="mt-8 pt-8 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex flex-col items-center md:items-start">
               <div className="text-lg font-semibold text-gray-900 mb-1">Data Rooms flexibles</div>

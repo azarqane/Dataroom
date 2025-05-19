@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     hmr: {
       clientPort: 443,
-      host: 'localhost',
+      host: 'zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3-h3p2cmls--5173--4d9fd228.local-corp.webcontainer-api.io',
       overlay: false
     }
   }

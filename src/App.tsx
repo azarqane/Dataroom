@@ -1,5 +1,5 @@
 // App.tsx
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -12,26 +12,10 @@ import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
-import DashboardPage from './pages/DashboardPage';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div>Chargement...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" />;
-  }
-  
-  return <>{children}</>;
-};
+import { AuthProvider } from './contexts/AuthContext';
 
 function AppWrapper() {
   const location = useLocation();
-  const { user } = useAuth();
 
   useEffect(() => {
     if (location.pathname === '/' && location.hash) {
@@ -58,16 +42,11 @@ function AppWrapper() {
             <Testimonials />
             <Pricing />
             <FAQ />
-            <Footer />
           </main>
         } />
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/dashboard" element={
-          <PrivateRoute>
-            <DashboardPage />
-          </PrivateRoute>
-        } />
       </Routes>
+      <Footer />
       <ScrollToTop />
     </div>
   );

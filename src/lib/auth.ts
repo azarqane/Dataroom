@@ -10,17 +10,6 @@ export interface Profile {
 
 export const signUp = async (email: string, password: string, full_name: string) => {
   try {
-    // First check if user exists
-    const { data: existingUser } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
-
-    if (existingUser) {
-      throw new Error('Un compte existe déjà avec cette adresse email');
-    }
-
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -85,15 +74,17 @@ export const signOut = async () => {
 
 export const getProfile = async (userId: string) => {
   try {
-    const { data, error, count } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact' })
+      .select('*')
       .eq('id', userId)
-      .maybeSingle();
+      .single();
 
-    // If no profile is found or there's an error, return null
-    if (error || !data) {
-      return { data: null, error: null };
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { data: null, error: null };
+      }
+      throw error;
     }
 
     return { data, error: null };

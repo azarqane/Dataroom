@@ -3,9 +3,11 @@ import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
 import { signIn, signUp } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,8 +19,11 @@ const AuthPage = () => {
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +44,7 @@ const AuthPage = () => {
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) throw error;
         if (data) {
-          // Rediriger vers une page de confirmation
-          navigate('/auth/confirm');
+          navigate('/dashboard');
         }
       }
     } catch (err) {
@@ -99,6 +103,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="John Doe"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -122,6 +127,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="exemple@email.com"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -144,6 +150,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="••••••••"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -166,6 +173,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="••••••••"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -179,6 +187,7 @@ const AuthPage = () => {
                     name="remember-me"
                     type="checkbox"
                     className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    disabled={loading}
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                     Se souvenir de moi
@@ -221,6 +230,7 @@ const AuthPage = () => {
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                disabled={loading}
               >
                 {isLogin ? 'Créer un nouveau compte' : 'Se connecter'}
               </button>

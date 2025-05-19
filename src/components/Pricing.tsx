@@ -95,7 +95,7 @@ export const Pricing = () => {
         { text: "Support premium 24/7 dédié", available: true },
         { text: "Rapports d'activité avancés", available: true },
       ],
-      cta: "Obtenir un devis",
+      cta: "Souscrire maintenant",
     },
   ];
 

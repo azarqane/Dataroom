@@ -26,14 +26,14 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // Simulate login
+        // Mock login functionality
         console.log('Login:', { email: formData.email, password: formData.password });
         navigate('/dashboard');
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');
         }
-        // Simulate signup
+        // Mock signup functionality
         console.log('Signup:', { email: formData.email, password: formData.password, name: formData.name });
         navigate('/auth/confirm');
       }

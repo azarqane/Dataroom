@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
 
@@ -10,6 +10,10 @@ const AuthPage = () => {
     confirmPassword: '',
     name: ''
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -80,7 +80,7 @@ const AuthPage = () => {
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                   Nom complet
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
@@ -93,7 +93,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="John Doe"
-                    style={{ position: 'relative' }}
+                    autoComplete="name"
                   />
                 </div>
               </div>
@@ -103,7 +103,7 @@ const AuthPage = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Adresse email
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
@@ -117,7 +117,6 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="exemple@email.com"
-                  style={{ position: 'relative' }}
                 />
               </div>
             </div>
@@ -126,7 +125,7 @@ const AuthPage = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Mot de passe
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
@@ -140,7 +139,6 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="••••••••"
-                  style={{ position: 'relative' }}
                 />
               </div>
             </div>
@@ -150,7 +148,7 @@ const AuthPage = () => {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirmer le mot de passe
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
@@ -163,7 +161,7 @@ const AuthPage = () => {
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     placeholder="••••••••"
-                    style={{ position: 'relative' }}
+                    autoComplete="new-password"
                   />
                 </div>
               </div>

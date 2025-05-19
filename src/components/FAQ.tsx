@@ -32,10 +32,7 @@ const FAQItems: FAQItem[] = [
     question: "Comment fonctionne le support client ?",
     answer: "Selon votre forfait, vous bénéficiez d'un support par email, téléphone ou d'un gestionnaire de compte dédié. Le forfait Enterprise inclut un support 24/7. Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous aider à résoudre rapidement tout problème."
   },
-  {
-    question: "Puis-je intégrer NeutVault à mes outils existants ?",
-    answer: "Oui, NeutVault propose des API pour l'intégration avec vos systèmes existants comme les plateformes de gestion documentaire, les CRM, ou les outils de signature électronique. Les capacités d'intégration varient selon le forfait choisi."
-  },
+  
   {
     question: "Que se passe-t-il si je change de forfait ?",
     answer: "Vous pouvez facilement passer à un forfait supérieur à tout moment, et les changements prendront effet immédiatement. Si vous souhaitez passer à un forfait inférieur, le changement sera effectif à la fin de votre période de facturation en cours."

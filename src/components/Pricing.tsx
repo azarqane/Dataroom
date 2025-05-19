@@ -27,13 +27,36 @@ export const Pricing = () => {
 
   const plans: Plan[] = [
     {
+      name: "Offre Start",
+      description: "Pour les freelances, indépendants et petits projets",
+      monthlyPrice: 49,
+      yearlyPrice: 490, // 2 mois offerts
+      icon: <Database className="h-6 w-6 text-gray-500" />,
+      highlights: [
+        "1 Data Room active",
+        "10 Go de stockage sécurisé",
+        "Jusqu’à 2 administrateurs",
+      ],
+      features: [
+        { text: "Support email standard (jours ouvrés)", available: true },
+        { text: "Essai gratuit 14 jours sans carte bancaire", available: true },
+        { text: "Rapports d'activité simples (accès récents)", available: true },
+        { text: "Journalisation blockchain", available: false },
+        { text: "Filigrane personnalisé", available: false },
+        { text: "Support prioritaire", available: false },
+      ],
+      cta: "Commencer l'essai",
+    },
+    {
       name: "Offre Essentielle",
+      popular: true,
+
       description: "Pour les indépendants, petites équipes, professions libérales",
       monthlyPrice: 99,
       yearlyPrice: 990, // 2 mois offerts
       icon: <Database className="h-6 w-6 text-blue-600" />,
       highlights: [
-        "1 Data Room active",
+        "10 Data Rooms actives",
         "50 Go de stockage sécurisé",
         "Jusqu’à 5 administrateurs",
       ],
@@ -47,33 +70,12 @@ export const Pricing = () => {
       ],
       cta: "Commencer l'essai",
     },
-    {
-      name: "Offre Pro",
-      description: "Pour cabinets, agences, PME, professions réglementées",
-      monthlyPrice: 149,
-      yearlyPrice: 1490,
-      icon: <Users className="h-6 w-6 text-teal-600" />,
-      popular: true,
-      highlights: [
-        "3 Data Rooms actives",
-        "200 Go de stockage sécurisé",
-        "Jusqu’à 15 administrateurs",
-      ],
-      features: [
-        { text: "Traçabilité avancée (audit blockchain, rapports exportables)", available: true },
-        { text: "Blocage téléchargement & impression", available: true },
-        { text: "Watermarking renforcé", available: true },
-        { text: "Formation en ligne offerte", available: true },
-        { text: "Support prioritaire (téléphone + email)", available: true },
-        { text: "Personnalisation de l'interface", available: false },
-      ],
-      cta: "Essayer l’offre Pro",
-    },
+  
     {
       name: "Offre Business",
       description: "Pour bureaux d’études, cabinets d’architectes, groupes multi-sites",
-      monthlyPrice: 169,
-      yearlyPrice: 1690,
+      monthlyPrice: 249,
+      yearlyPrice: 2490,
       icon: <Shield className="h-6 w-6 text-purple-600" />,
       highlights: [
         "Data Rooms illimitées",
@@ -131,7 +133,8 @@ export const Pricing = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+
           {plans.map((plan, index) => (
             <div
               key={index}

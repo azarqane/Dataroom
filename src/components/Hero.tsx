@@ -30,9 +30,11 @@ export const Hero = () => {
                 <Button variant="primary" size="lg">
                   Démarrer l'essai gratuit
                 </Button>
+                <a href="#contact" >
                 <Button variant="outline" size="lg">
                   Demander une démo
                 </Button>
+              </a>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

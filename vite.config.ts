@@ -5,7 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true, // ← ceci est suffisant sur StackBlitz
-    // 🔴 Pas de config HMR ici
+    host: true,
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss'
+    }
   }
 });

@@ -3,11 +3,9 @@ import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
 import { signIn, signUp } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,15 +17,8 @@ const AuthPage = () => {
   });
 
   useEffect(() => {
-    // Redirect to admin dashboard if user is admin
-    if (user && profile?.role === 'admin') {
-      navigate('/admin');
-    }
-    // Redirect to dashboard if user is logged in but not admin
-    else if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, profile, navigate]);
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +29,8 @@ const AuthPage = () => {
       if (isLogin) {
         const { data, error } = await signIn(formData.email, formData.password);
         if (error) throw error;
-        if (data?.user) {
-          // Navigation will be handled by the useEffect above
+        if (data) {
+          navigate('/dashboard');
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
@@ -48,9 +39,8 @@ const AuthPage = () => {
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) throw error;
         if (data) {
-          // Show success message
-          alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
-          setIsLogin(true);
+          // Rediriger vers une page de confirmation
+          navigate('/auth/confirm');
         }
       }
     } catch (err) {

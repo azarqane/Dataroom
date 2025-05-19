@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Mail, Phone, Send } from 'lucide-react';
 import { Button } from './Button';
+import { useNavigate } from 'react-router-dom';
 
 interface FAQItem {
   question: string;
@@ -65,6 +66,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ item, isOpen, toggleItem }) => {
 };
 
 export const FAQ = () => {
+  const navigate = useNavigate();
   const [openItems, setOpenItems] = useState<number[]>([0]);
   const [formData, setFormData] = useState({
     name: '',
@@ -99,6 +101,10 @@ export const FAQ = () => {
       message: '',
       subject: 'general'
     });
+  };
+
+  const handleTrialClick = () => {
+    navigate('/auth');
   };
 
   return (
@@ -142,10 +148,12 @@ export const FAQ = () => {
                   Rejoignez des milliers d'entreprises qui font confiance à NeutVault pour leurs Data Rooms.
                 </p>
                 <div className="space-y-4">
-                  <button className="w-full bg-white text-blue-900 hover:bg-teal-100 px-6 py-3 rounded-lg font-medium transition-colors">
+                  <button 
+                    onClick={handleTrialClick}
+                    className="w-full bg-white text-blue-900 hover:bg-teal-100 px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
                     Démarrer l'essai gratuit
                   </button>
-                  
                 </div>
               </div>
               <div className="w-full lg:w-1/2 bg-white p-8 lg:p-12" id="contact">

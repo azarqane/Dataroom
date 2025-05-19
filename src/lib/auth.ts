@@ -10,12 +10,28 @@ export interface Profile {
 
 export const signUp = async (email: string, password: string, full_name: string) => {
   try {
+    // First check if user exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingUser) {
+      throw new Error('Un compte existe déjà avec cette adresse email');
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      if (authError.message.includes('User already registered')) {
+        throw new Error('Un compte existe déjà avec cette adresse email');
+      }
+      throw authError;
+    }
 
     if (authData.user) {
       const { error: profileError } = await supabase
@@ -44,7 +60,12 @@ export const signIn = async (email: string, password: string) => {
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Email ou mot de passe incorrect');
+      }
+      throw error;
+    }
 
     return { data, error: null };
   } catch (error) {

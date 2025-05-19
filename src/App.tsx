@@ -48,7 +48,7 @@ function AppWrapper() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet />
-      {!user && location.pathname === '/' && <Navbar />}
+      <Navbar />
       <Routes>
         <Route path="/" element={
           <main>
@@ -58,6 +58,7 @@ function AppWrapper() {
             <Testimonials />
             <Pricing />
             <FAQ />
+            <Footer />
           </main>
         } />
         <Route path="/auth" element={<AuthPage />} />
@@ -67,7 +68,6 @@ function AppWrapper() {
           </PrivateRoute>
         } />
       </Routes>
-      {!user && location.pathname === '/' && <Footer />}
       <ScrollToTop />
     </div>
   );

@@ -13,7 +13,6 @@ import {
   History,
   Lock
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -32,7 +31,10 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
 );
 
 export const Features = () => {
-  const navigate = useNavigate();
+  const handleDemoClick = () => {
+    // Handle demo request
+    console.log('Demo requested');
+  };
 
   const features = [
     {
@@ -110,10 +112,6 @@ export const Features = () => {
     }
   ];
 
-  const handleNavigate = () => {
-    navigate('/auth');
-  };
-
   return (
     <section className="py-20 bg-gray-50" id="features">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,13 +168,13 @@ export const Features = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <button 
-                  onClick={handleNavigate} 
+                  onClick={handleDemoClick} 
                   className="bg-white text-blue-900 hover:bg-teal-50 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Démarrer l'essai gratuit
                 </button>
                 <button 
-                  onClick={handleNavigate}
+                  onClick={handleDemoClick}
                   className="bg-transparent border border-white text-white hover:bg-blue-800 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Demander une démo

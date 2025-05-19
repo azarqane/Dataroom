@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Shield, ChevronDown } from 'lucide-react';
 import { Button } from './Button';
-import { Link } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,17 +20,7 @@ export const Navbar = () => {
     };
   }, [scrolled]);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  
   const handleNavigation = (sectionId: string) => {
-    // Si on est sur une autre page que la landing
-    if (location.pathname !== '/') {
-      navigate(`/#${sectionId}`);
-      return;
-    }
-  
-    // Sinon on est déjà sur la landing : scroll en douceur
     const element = document.getElementById(sectionId);
     if (element) {
       const offset = 100;
@@ -47,8 +35,9 @@ export const Navbar = () => {
     }
   };
 
-  const handleTrialClick = () => {
-    navigate('/auth');
+  const handleDemoClick = () => {
+    // Handle demo request
+    console.log('Demo requested');
     setIsOpen(false);
   };
 
@@ -62,13 +51,7 @@ export const Navbar = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <div
-              onClick={() => {
-                if (location.pathname === '/') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                  navigate('/');
-                }
-              }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
             >
               <Shield className="h-8 w-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
@@ -116,10 +99,10 @@ export const Navbar = () => {
             </nav>
           </div>
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
+            <button onClick={handleDemoClick} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
               Connexion
-            </Link>
-            <Button variant="primary" onClick={handleTrialClick}>Essai gratuit</Button>
+            </button>
+            <Button variant="primary" onClick={handleDemoClick}>Essai gratuit</Button>
           </div>
           <div className="md:hidden">
             <button 
@@ -171,10 +154,10 @@ export const Navbar = () => {
             Tarifs
           </button>
           <div className="pt-4 border-t border-gray-200 flex flex-col space-y-3">
-            <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
+            <button onClick={handleDemoClick} className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
               Connexion
-            </Link>
-            <Button variant="primary" className="w-full" onClick={handleTrialClick}>
+            </button>
+            <Button variant="primary" className="w-full" onClick={handleDemoClick}>
               Essai gratuit
             </Button>
           </div>

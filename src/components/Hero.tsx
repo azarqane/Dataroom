@@ -1,10 +1,12 @@
 import React from 'react';
 import { Button } from './Button';
 import { Shield, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export const Hero = () => {
-  const navigate = useNavigate();
+  const handleDemoClick = () => {
+    // Handle demo request
+    console.log('Demo requested');
+  };
 
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" id="hero">
@@ -30,10 +32,10 @@ export const Hero = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button variant="primary" size="lg" onClick={() => navigate('/auth')}>
+                <Button variant="primary" size="lg" onClick={handleDemoClick}>
                   Démarrer l'essai gratuit
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => navigate('/auth')}>
+                <Button variant="outline" size="lg" onClick={handleDemoClick}>
                   Demander une démo
                 </Button>
               </div>

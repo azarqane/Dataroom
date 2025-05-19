@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// App.tsx
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
@@ -9,31 +11,50 @@ import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
+import AuthPage from './pages/AuthPage';
 
+function AppWrapper() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/' && location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        const offset = 100;
+        const position = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top: position, behavior: 'smooth' });
+      }
+    }
+  }, [location]);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Helmet />
+      <Navbar />
+      <Routes>
+        <Route path="/" element={
+          <main>
+            <Hero />
+            <Features />
+            <Security />
+            <Testimonials />
+            <Pricing />
+            <FAQ />
+          </main>
+        } />
+        <Route path="/auth" element={<AuthPage />} />
+      </Routes>
+      <Footer />
+      <ScrollToTop />
+    </div>
+  );
+}
 
 function App() {
-  console.log("App loaded");
   return (
     <Router>
-      <div className="min-h-screen bg-white">
-        <Helmet />
-        <Navbar />
-        <Routes>
-          
-          <Route path="/" element={
-            <main>
-              <Hero />
-              <Features />
-              <Security />
-              <Testimonials />
-              <Pricing />
-              <FAQ />
-            </main>
-          } />
-        </Routes>
-        <Footer />
-        <ScrollToTop />
-      </div>
+      <AppWrapper />
     </Router>
   );
 }

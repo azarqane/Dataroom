@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Shield, ChevronDown } from 'lucide-react';
 import { Button } from './Button';
+import { Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,13 +22,23 @@ export const Navbar = () => {
     };
   }, [scrolled]);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const handleNavigation = (sectionId: string) => {
+    // Si on est sur une autre page que la landing
+    if (location.pathname !== '/') {
+      navigate(`/#${sectionId}`);
+      return;
+    }
+  
+    // Sinon on est déjà sur la landing : scroll en douceur
     const element = document.getElementById(sectionId);
     if (element) {
       const offset = 100;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-
+  
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
@@ -44,10 +56,21 @@ export const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <div className="flex items-center flex-shrink-0 mr-10">
-              <Shield className="h-8 w-8 text-teal-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">NeutVault</span>
-            </div>
+          <div
+  onClick={() => {
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
+  }}
+  className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
+>
+  <Shield className="h-8 w-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
+  <span className="ml-2 text-xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+    NeutVault
+  </span>
+</div>
             <nav className="hidden md:flex space-x-8">
               <button onClick={() => handleNavigation('features')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
                 Fonctionnalités
@@ -88,9 +111,11 @@ export const Navbar = () => {
             </nav>
           </div>
           <div className="hidden md:flex items-center space-x-4">
-            <button onClick={() => handleNavigation('login')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-              Connexion
-            </button>
+          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
+            Connexion
+          </Link>
+
+
             <Button variant="primary" onClick={() => handleNavigation('trial')}>Essai gratuit</Button>
           </div>
           <div className="md:hidden">
@@ -143,9 +168,11 @@ export const Navbar = () => {
             Tarifs
           </button>
           <div className="pt-4 border-t border-gray-200 flex flex-col space-y-3">
-            <button onClick={() => handleNavigation('login')} className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
-              Connexion
-            </button>
+          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
+            Connexion
+          </Link>
+
+
             <Button variant="primary" className="w-full" onClick={() => handleNavigation('trial')}>
               Essai gratuit
             </Button>

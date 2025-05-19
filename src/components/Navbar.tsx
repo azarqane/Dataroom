@@ -47,6 +47,11 @@ export const Navbar = () => {
     }
   };
 
+  const handleTrialClick = () => {
+    navigate('/auth');
+    setIsOpen(false);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -56,21 +61,21 @@ export const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-          <div
-  onClick={() => {
-    if (location.pathname === '/') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/');
-    }
-  }}
-  className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
->
-  <Shield className="h-8 w-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
-  <span className="ml-2 text-xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
-    NeutVault
-  </span>
-</div>
+            <div
+              onClick={() => {
+                if (location.pathname === '/') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  navigate('/');
+                }
+              }}
+              className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
+            >
+              <Shield className="h-8 w-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="ml-2 text-xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+                NeutVault
+              </span>
+            </div>
             <nav className="hidden md:flex space-x-8">
               <button onClick={() => handleNavigation('features')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
                 Fonctionnalités
@@ -111,12 +116,10 @@ export const Navbar = () => {
             </nav>
           </div>
           <div className="hidden md:flex items-center space-x-4">
-          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-            Connexion
-          </Link>
-
-
-            <Button variant="primary" onClick={() => handleNavigation('trial')}>Essai gratuit</Button>
+            <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
+              Connexion
+            </Link>
+            <Button variant="primary" onClick={handleTrialClick}>Essai gratuit</Button>
           </div>
           <div className="md:hidden">
             <button 
@@ -168,12 +171,10 @@ export const Navbar = () => {
             Tarifs
           </button>
           <div className="pt-4 border-t border-gray-200 flex flex-col space-y-3">
-          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
-            Connexion
-          </Link>
-
-
-            <Button variant="primary" className="w-full" onClick={() => handleNavigation('trial')}>
+            <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
+              Connexion
+            </Link>
+            <Button variant="primary" className="w-full" onClick={handleTrialClick}>
               Essai gratuit
             </Button>
           </div>

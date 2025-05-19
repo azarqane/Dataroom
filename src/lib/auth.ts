@@ -70,7 +70,13 @@ export const getProfile = async (userId: string) => {
       .eq('id', userId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // If no profile is found, return null without throwing an error
+      if (error.code === 'PGRST116') {
+        return { data: null, error: null };
+      }
+      throw error;
+    }
 
     return { data, error: null };
   } catch (error) {

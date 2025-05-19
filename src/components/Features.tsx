@@ -110,6 +110,10 @@ export const Features = () => {
     }
   ];
 
+  const handleNavigate = () => {
+    navigate('/auth');
+  };
+
   return (
     <section className="py-20 bg-gray-50" id="features">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,13 +170,13 @@ export const Features = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <button 
-                  onClick={() => navigate('/auth')} 
+                  onClick={handleNavigate} 
                   className="bg-white text-blue-900 hover:bg-teal-50 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Démarrer l'essai gratuit
                 </button>
                 <button 
-                  onClick={() => navigate('/auth')}
+                  onClick={handleNavigate}
                   className="bg-transparent border border-white text-white hover:bg-blue-800 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Demander une démo

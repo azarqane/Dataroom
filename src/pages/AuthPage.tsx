@@ -37,16 +37,10 @@ const AuthPage = () => {
           throw new Error('Les mots de passe ne correspondent pas');
         }
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
-        if (error) {
-          // Ignorer l'erreur d'email de confirmation et rediriger
-          if (error.message.includes('confirmation')) {
-            navigate('/dashboard');
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
         if (data) {
-          navigate('/dashboard');
+          // Rediriger vers une page de confirmation
+          navigate('/auth/confirm');
         }
       }
     } catch (err) {

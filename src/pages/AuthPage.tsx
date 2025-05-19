@@ -3,11 +3,9 @@ import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
 import { signIn, signUp } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,10 +17,8 @@ const AuthPage = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +29,7 @@ const AuthPage = () => {
       if (isLogin) {
         const { data, error } = await signIn(formData.email, formData.password);
         if (error) throw error;
-        if (data?.user) {
+        if (data) {
           navigate('/dashboard');
         }
       } else {
@@ -42,8 +38,9 @@ const AuthPage = () => {
         }
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) throw error;
-        if (data?.user) {
-          navigate('/dashboard');
+        if (data) {
+          // Rediriger vers une page de confirmation
+          navigate('/auth/confirm');
         }
       }
     } catch (err) {

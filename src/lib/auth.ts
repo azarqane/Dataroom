@@ -54,13 +54,7 @@ export const signIn = async (email: string, password: string) => {
       password,
     });
 
-    if (error) {
-      // Traduire les messages d'erreur Supabase
-      if (error.message === 'Invalid login credentials') {
-        throw new Error('Email ou mot de passe incorrect');
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     return { data, error: null };
   } catch (error) {

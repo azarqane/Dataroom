@@ -6,6 +6,7 @@ export interface Profile {
   full_name: string | null;
   created_at: string;
   updated_at: string;
+  role: string;
 }
 
 export const signUp = async (email: string, password: string, full_name: string) => {
@@ -18,14 +19,12 @@ export const signUp = async (email: string, password: string, full_name: string)
     if (authError) throw authError;
 
     if (authData.user) {
-      // Check if profile already exists
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', authData.user.id)
-        .maybeSingle();
+        .single();
 
-      // Only create profile if it doesn't exist
       if (!existingProfile) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -34,8 +33,10 @@ export const signUp = async (email: string, password: string, full_name: string)
               id: authData.user.id,
               email,
               full_name,
+              role: 'user'
             },
-          ]);
+          ])
+          .single();
 
         if (profileError) throw profileError;
       }
@@ -74,55 +75,13 @@ export const signOut = async () => {
 
 export const getProfile = async (userId: string) => {
   try {
-    // First try to get the existing profile
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .maybeSingle();
+      .single();
 
     if (error) throw error;
-
-    // If no profile exists, get the user's email and create one
-    if (!data) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        // Check again before inserting to prevent race conditions
-        const { data: checkProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (!checkProfile) {
-          const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: userId,
-                email: userData.user.email,
-                full_name: null,
-              },
-            ])
-            .select()
-            .single();
-
-          if (insertError) throw insertError;
-          data = newProfile;
-        } else {
-          // Profile was created between our first and second check
-          const { data: justCreatedProfile, error: fetchError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (fetchError) throw fetchError;
-          data = justCreatedProfile;
-        }
-      }
-    }
-
     return { data, error: null };
   } catch (error) {
     return { data: null, error };
@@ -134,10 +93,10 @@ export const updateProfile = async (userId: string, updates: Partial<Profile>) =
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('id', userId);
+      .eq('id', userId)
+      .single();
 
     if (error) throw error;
-
     return { data, error: null };
   } catch (error) {
     return { data: null, error };

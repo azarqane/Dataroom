@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) {
         getProfile(session.user.id).then(({ data }) => {
-          setProfile(data || null); // Handle case where no profile exists
+          setProfile(data);
         });
       }
       setLoading(false);
@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) {
         const { data } = await getProfile(session.user.id);
-        setProfile(data || null); // Handle case where no profile exists
+        setProfile(data);
       } else {
         setProfile(null);
       }

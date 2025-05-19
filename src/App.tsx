@@ -12,6 +12,7 @@ import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
+import { AuthProvider } from './contexts/AuthContext';
 
 function AppWrapper() {
   const location = useLocation();
@@ -54,7 +55,9 @@ function AppWrapper() {
 function App() {
   return (
     <Router>
-      <AppWrapper />
+      <AuthProvider>
+        <AppWrapper />
+      </AuthProvider>
     </Router>
   );
 }

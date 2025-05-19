@@ -5,11 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true,
+    host: 'local-corp.webcontainer-api.io',
     hmr: {
       overlay: false,
       protocol: 'ws',
-      host: 'localhost'
+      host: 'local-corp.webcontainer-api.io'
     }
   }
 });

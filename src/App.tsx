@@ -1,5 +1,4 @@
-// App.tsx
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -12,7 +11,49 @@ import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Chargement...</div>;
+  }
+  
+  return user ? <>{children}</> : <Navigate to="/auth" />;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Chargement...</div>;
+  }
+  
+  return !user ? <>{children}</> : <Navigate to="/dashboard" />;
+}
+
+function Dashboard() {
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <h1 className="text-2xl font-bold mb-4">Tableau de bord</h1>
+      <p>Bienvenue dans votre espace personnel</p>
+    </div>
+  );
+}
+
+function LandingPage() {
+  return (
+    <main>
+      <Hero />
+      <Features />
+      <Security />
+      <Testimonials />
+      <Pricing />
+      <FAQ />
+    </main>
+  );
+}
 
 function AppWrapper() {
   const location = useLocation();
@@ -34,17 +75,23 @@ function AppWrapper() {
       <Helmet />
       <Navbar />
       <Routes>
-        <Route path="/" element={
-          <main>
-            <Hero />
-            <Features />
-            <Security />
-            <Testimonials />
-            <Pricing />
-            <FAQ />
-          </main>
-        } />
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route 
+          path="/auth" 
+          element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          } 
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
       <Footer />
       <ScrollToTop />

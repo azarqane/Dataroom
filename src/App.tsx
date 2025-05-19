@@ -1,4 +1,3 @@
-// App.tsx
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
@@ -12,6 +11,8 @@ import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
+import DashboardPage from './pages/admin/DashboardPage';
+import AdminLayout from './layouts/AdminLayout';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppWrapper() {
@@ -31,23 +32,26 @@ function AppWrapper() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet />
-      <Navbar />
+      {location.pathname.startsWith('/admin') ? null : <Navbar />}
       <Routes>
         <Route path="/" element={
           <main>
+            <Helmet />
             <Hero />
             <Features />
             <Security />
             <Testimonials />
             <Pricing />
             <FAQ />
+            <Footer />
+            <ScrollToTop />
           </main>
         } />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<DashboardPage />} />
+        </Route>
       </Routes>
-      <Footer />
-      <ScrollToTop />
     </div>
   );
 }

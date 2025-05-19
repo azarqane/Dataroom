@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Check, HelpCircle, Shield, Database, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Mail, Phone, Send, Check, HelpCircle, Shield, Database, Users } from 'lucide-react';
 import { Button } from './Button';
+import { useNavigate } from 'react-router-dom';
 import { ReactNode } from 'react';
-
 
 interface PlanFeature {
   text: string;
@@ -23,7 +23,14 @@ interface Plan {
 }
 
 export const Pricing = () => {
+  const navigate = useNavigate();
   const [annual, setAnnual] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+    subject: 'general'
+  });
 
   const plans: Plan[] = [
     {
@@ -35,7 +42,7 @@ export const Pricing = () => {
       highlights: [
         "1 Data Room active",
         "10 Go de stockage sécurisé",
-        "Jusqu’à 2 administrateurs",
+        "Jusqu'à 2 administrateurs",
       ],
       features: [
         { text: "Support email standard (jours ouvrés)", available: true },
@@ -50,7 +57,6 @@ export const Pricing = () => {
     {
       name: "Offre Essentielle",
       popular: true,
-
       description: "Pour les indépendants, petites équipes, professions libérales",
       monthlyPrice: 99,
       yearlyPrice: 990, // 2 mois offerts
@@ -58,11 +64,11 @@ export const Pricing = () => {
       highlights: [
         "10 Data Rooms actives",
         "50 Go de stockage sécurisé",
-        "Jusqu’à 5 administrateurs",
+        "Jusqu'à 5 administrateurs",
       ],
       features: [
         { text: "Journalisation blockchain des accès", available: true },
-        { text: "Filigrane dynamique anti-capture d’écran", available: true },
+        { text: "Filigrane dynamique anti-capture d'écran", available: true },
         { text: "Support email local (9h-18h, jours ouvrés)", available: true },
         { text: "Essai gratuit 14 jours sans carte bancaire", available: true },
         { text: "Rapports d'activité basiques", available: false },
@@ -70,21 +76,20 @@ export const Pricing = () => {
       ],
       cta: "Commencer l'essai",
     },
-  
     {
       name: "Offre Business",
-      description: "Pour bureaux d’études, cabinets d’architectes, groupes multi-sites",
+      description: "Pour bureaux d'études, cabinets d'architectes, groupes multi-sites",
       monthlyPrice: 249,
       yearlyPrice: 2490,
       icon: <Shield className="h-6 w-6 text-purple-600" />,
       highlights: [
         "Data Rooms illimitées",
         "500 Go de stockage sécurisé",
-        "Jusqu’à 30 administrateurs",
+        "Jusqu'à 30 administrateurs",
       ],
       features: [
         { text: "Visualiseur sécurisé (plans, PDF, CAO)", available: true },
-        { text: "Anti-capture d’écran et verrouillage export", available: true },
+        { text: "Anti-capture d'écran et verrouillage export", available: true },
         { text: "Watermarking personnalisé", available: true },
         { text: "Archivage légal 10 ans", available: true },
         { text: "Support premium 24/7 dédié", available: true },
@@ -134,7 +139,6 @@ export const Pricing = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-
           {plans.map((plan, index) => (
             <div
               key={index}
@@ -188,8 +192,12 @@ export const Pricing = () => {
                   ))}
                 </div>
 
-                <Button variant={plan.popular ? 'primary' : 'outline'} className="w-full mb-6">
-                  {plan.cta}
+                <Button 
+                  variant={plan.popular ? 'primary' : 'outline'} 
+                  className="w-full mb-6"
+                  onClick={() => navigate('/auth')}
+                >
+                  Commencer l'essai
                 </Button>
 
                 <ul className="space-y-3">
@@ -232,9 +240,9 @@ export const Pricing = () => {
               </p>
             </div>
             <div className="w-full md:w-1/3 md:text-right">
-            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
-              <Button variant="secondary">Contactez-nous</Button>
-            </a>
+              <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
+                <Button variant="secondary">Contactez-nous</Button>
+              </a>
             </div>
           </div>
 

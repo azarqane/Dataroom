@@ -3,9 +3,11 @@ import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
 import { signIn, signUp } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,8 +19,10 @@ const AuthPage = () => {
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,27 +32,18 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         const { data, error } = await signIn(formData.email, formData.password);
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
         if (data?.user) {
           navigate('/dashboard');
-        } else {
-          throw new Error('Une erreur est survenue lors de la connexion');
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');
         }
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
-        if (error) {
-          if (error.message.includes('duplicate key')) {
-            throw new Error('Un compte existe déjà avec cet email');
-          }
-          throw error;
-        }
-        if (data) {
-          navigate('/auth/confirm');
+        if (error) throw error;
+        if (data?.user) {
+          navigate('/dashboard');
         }
       }
     } catch (err) {

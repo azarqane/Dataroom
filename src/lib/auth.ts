@@ -64,13 +64,35 @@ export const signOut = async () => {
 
 export const getProfile = async (userId: string) => {
   try {
-    const { data, error } = await supabase
+    // First try to get the existing profile
+    let { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+
+    // If no profile exists, get the user's email and create one
+    if (!data) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: userId,
+              email: userData.user.email,
+              full_name: null,
+            },
+          ])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        data = newProfile;
+      }
+    }
 
     return { data, error: null };
   } catch (error) {

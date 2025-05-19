@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
+import { signIn, signUp } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,8 +22,32 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // La logique d'authentification sera ajoutée plus tard
-    console.log('Form submitted:', formData);
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { data, error } = await signIn(formData.email, formData.password);
+        if (error) throw error;
+        if (data) {
+          navigate('/dashboard');
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Les mots de passe ne correspondent pas');
+        }
+        const { data, error } = await signUp(formData.email, formData.password, formData.name);
+        if (error) throw error;
+        if (data) {
+          // Rediriger vers une page de confirmation
+          navigate('/auth/confirm');
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +74,12 @@ const AuthPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-md p-3 text-sm">
+              {error}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             {!isLogin && (
               <div>
@@ -159,8 +194,13 @@ const AuthPage = () => {
             )}
 
             <div>
-              <Button type="submit" variant="primary" className="w-full">
-                {isLogin ? 'Se connecter' : "S'inscrire"}
+              <Button 
+                type="submit" 
+                variant="primary" 
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? 'Chargement...' : (isLogin ? 'Se connecter' : "S'inscrire")}
               </Button>
             </div>
           </form>

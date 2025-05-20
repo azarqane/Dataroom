@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut, Plus, Globe, Clock, Lock, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Select from 'react-select';
 import { Button } from '../components/Button';
+import { countryOptions, continents } from '../utils/countries';
 
 interface DataRoom {
   id: string;
@@ -10,7 +12,10 @@ interface DataRoom {
   createdAt: string;
   expiresAt: string;
   status: 'active' | 'expired';
-  geoRestriction: string[];
+  geoRestriction: {
+    enabled: boolean;
+    countries: string[];
+  };
   documentsCount: number;
   usersCount: number;
 }
@@ -25,7 +30,10 @@ const DashboardPage = () => {
       createdAt: '2024-02-20',
       expiresAt: '2024-05-20',
       status: 'active',
-      geoRestriction: ['France', 'Belgique'],
+      geoRestriction: {
+        enabled: true,
+        countries: ['FR', 'BE']
+      },
       documentsCount: 45,
       usersCount: 12
     },
@@ -36,7 +44,10 @@ const DashboardPage = () => {
       createdAt: '2024-01-15',
       expiresAt: '2024-04-15',
       status: 'active',
-      geoRestriction: ['France'],
+      geoRestriction: {
+        enabled: false,
+        countries: []
+      },
       documentsCount: 28,
       usersCount: 8
     }
@@ -46,7 +57,10 @@ const DashboardPage = () => {
     name: '',
     description: '',
     expiresAt: '',
-    geoRestriction: [] as string[],
+    geoRestriction: {
+      enabled: false,
+      countries: [] as string[]
+    },
     securityLevel: 'high',
     watermark: true,
     preventDownload: true,
@@ -54,9 +68,25 @@ const DashboardPage = () => {
     twoFactorAuth: true
   });
 
+  const handleCountryChange = (selectedOptions: any) => {
+    setNewDataRoom({
+      ...newDataRoom,
+      geoRestriction: {
+        ...newDataRoom.geoRestriction,
+        countries: selectedOptions ? selectedOptions.map((option: any) => option.value) : []
+      }
+    });
+  };
+
+  const getCountryNames = (countryCodes: string[]) => {
+    return countryCodes
+      .map(code => countryOptions.find(country => country.value === code)?.label)
+      .filter(Boolean)
+      .join(', ');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200">
         <div className="p-6">
           <div className="flex items-center">
@@ -93,9 +123,7 @@ const DashboardPage = () => {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="ml-64">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex-1 max-w-lg">
@@ -127,7 +155,6 @@ const DashboardPage = () => {
           </div>
         </header>
 
-        {/* Main content */}
         <main className="p-6">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Mes Data Rooms</h1>
@@ -141,7 +168,6 @@ const DashboardPage = () => {
             </Button>
           </div>
 
-          {/* Data Rooms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dataRooms.map((dataRoom) => (
               <div key={dataRoom.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -163,7 +189,7 @@ const DashboardPage = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Globe className="h-4 w-4 mr-2" />
-                    {dataRoom.geoRestriction.join(', ')}
+                    {dataRoom.geoRestriction.enabled ? getCountryNames(dataRoom.geoRestriction.countries) : 'Aucune restriction'}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <FileText className="h-4 w-4 mr-2" />
@@ -189,7 +215,6 @@ const DashboardPage = () => {
         </main>
       </div>
 
-      {/* Create Data Room Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -245,22 +270,47 @@ const DashboardPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Restrictions géographiques
-                </label>
-                <select
-                  multiple
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  onChange={(e) => {
-                    const values = Array.from(e.target.selectedOptions, option => option.value);
-                    setNewDataRoom({...newDataRoom, geoRestriction: values});
-                  }}
-                >
-                  <option value="France">France</option>
-                  <option value="Belgique">Belgique</option>
-                  <option value="Suisse">Suisse</option>
-                  <option value="Luxembourg">Luxembourg</option>
-                </select>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Restrictions géographiques
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.geoRestriction.enabled}
+                      onChange={(e) => setNewDataRoom({
+                        ...newDataRoom,
+                        geoRestriction: {
+                          ...newDataRoom.geoRestriction,
+                          enabled: e.target.checked
+                        }
+                      })}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Activer la restriction</span>
+                  </label>
+                </div>
+                {newDataRoom.geoRestriction.enabled && (
+                  <div className="space-y-2">
+                    <Select
+                      isMulti
+                      options={countryOptions}
+                      onChange={handleCountryChange}
+                      placeholder="Sélectionnez les pays autorisés..."
+                      className="basic-multi-select"
+                      classNamePrefix="select"
+                      isSearchable={true}
+                      formatGroupLabel={data => (
+                        <div className="font-semibold text-gray-700">
+                          {continents[data.label as keyof typeof continents]}
+                        </div>
+                      )}
+                    />
+                    <p className="text-sm text-gray-500">
+                      Les utilisateurs ne pourront accéder à la Data Room que depuis les pays sélectionnés
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>

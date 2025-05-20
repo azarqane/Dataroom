@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
-  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -19,8 +17,8 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Pour l'instant, on redirige directement vers le dashboard
-    navigate('/dashboard');
+    // La logique d'authentification sera ajoutée plus tard
+    console.log('Form submitted:', formData);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

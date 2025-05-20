@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut, Plus, Globe, Clock, Lock, X } from 'lucide-react';
+import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut, Plus, Clock, Lock, X, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Select from 'react-select';
 import { Button } from '../components/Button';
-import { countryOptions, continents } from '../utils/countries';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import Select from 'react-select';
+import ReactSlider from 'react-slider';
 
 interface DataRoom {
   id: string;
@@ -12,12 +14,9 @@ interface DataRoom {
   createdAt: string;
   expiresAt: string;
   status: 'active' | 'expired';
-  geoRestriction: {
-    enabled: boolean;
-    countries: string[];
-  };
   documentsCount: number;
   usersCount: number;
+  securityLevel: number;
 }
 
 const DashboardPage = () => {
@@ -30,12 +29,9 @@ const DashboardPage = () => {
       createdAt: '2024-02-20',
       expiresAt: '2024-05-20',
       status: 'active',
-      geoRestriction: {
-        enabled: true,
-        countries: ['FR', 'BE']
-      },
       documentsCount: 45,
-      usersCount: 12
+      usersCount: 12,
+      securityLevel: 80
     },
     {
       id: '2',
@@ -44,49 +40,44 @@ const DashboardPage = () => {
       createdAt: '2024-01-15',
       expiresAt: '2024-04-15',
       status: 'active',
-      geoRestriction: {
-        enabled: false,
-        countries: []
-      },
       documentsCount: 28,
-      usersCount: 8
+      usersCount: 8,
+      securityLevel: 90
     }
   ]);
 
   const [newDataRoom, setNewDataRoom] = useState({
     name: '',
     description: '',
-    expiresAt: '',
-    geoRestriction: {
-      enabled: false,
-      countries: [] as string[]
-    },
-    securityLevel: 'high',
+    expiresAt: new Date(),
+    securityLevel: 75,
     watermark: true,
     preventDownload: true,
     preventPrinting: true,
-    twoFactorAuth: true
+    twoFactorAuth: true,
+    accessType: { value: 'email', label: 'Email' },
+    notificationFrequency: { value: 'daily', label: 'Quotidien' },
+    autoDelete: false,
+    maxViewsPerDocument: 0,
+    customWatermark: '',
+    allowScreenshots: false
   });
 
-  const handleCountryChange = (selectedOptions: any) => {
-    setNewDataRoom({
-      ...newDataRoom,
-      geoRestriction: {
-        ...newDataRoom.geoRestriction,
-        countries: selectedOptions ? selectedOptions.map((option: any) => option.value) : []
-      }
-    });
-  };
+  const accessTypeOptions = [
+    { value: 'email', label: 'Email' },
+    { value: 'domain', label: 'Domaine' },
+    { value: 'ip', label: 'Adresse IP' }
+  ];
 
-  const getCountryNames = (countryCodes: string[]) => {
-    return countryCodes
-      .map(code => countryOptions.find(country => country.value === code)?.label)
-      .filter(Boolean)
-      .join(', ');
-  };
+  const notificationOptions = [
+    { value: 'realtime', label: 'Temps réel' },
+    { value: 'daily', label: 'Quotidien' },
+    { value: 'weekly', label: 'Hebdomadaire' }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200">
         <div className="p-6">
           <div className="flex items-center">
@@ -123,7 +114,9 @@ const DashboardPage = () => {
         </div>
       </aside>
 
+      {/* Main content */}
       <div className="ml-64">
+        {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex-1 max-w-lg">
@@ -155,6 +148,7 @@ const DashboardPage = () => {
           </div>
         </header>
 
+        {/* Main content */}
         <main className="p-6">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Mes Data Rooms</h1>
@@ -168,6 +162,7 @@ const DashboardPage = () => {
             </Button>
           </div>
 
+          {/* Data Rooms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dataRooms.map((dataRoom) => (
               <div key={dataRoom.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -188,8 +183,8 @@ const DashboardPage = () => {
                     Expire le {new Date(dataRoom.expiresAt).toLocaleDateString()}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
-                    <Globe className="h-4 w-4 mr-2" />
-                    {dataRoom.geoRestriction.enabled ? getCountryNames(dataRoom.geoRestriction.countries) : 'Aucune restriction'}
+                    <Lock className="h-4 w-4 mr-2" />
+                    Niveau de sécurité: {dataRoom.securityLevel}%
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <FileText className="h-4 w-4 mr-2" />
@@ -215,6 +210,7 @@ const DashboardPage = () => {
         </main>
       </div>
 
+      {/* Create Data Room Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -261,61 +257,96 @@ const DashboardPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Date d'expiration
                 </label>
-                <input
-                  type="date"
-                  value={newDataRoom.expiresAt}
-                  onChange={(e) => setNewDataRoom({...newDataRoom, expiresAt: e.target.value})}
+                <DatePicker
+                  selected={newDataRoom.expiresAt}
+                  onChange={(date: Date) => setNewDataRoom({...newDataRoom, expiresAt: date})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  dateFormat="dd/MM/yyyy"
+                  minDate={new Date()}
+                  placeholderText="Sélectionnez une date"
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Restrictions géographiques
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newDataRoom.geoRestriction.enabled}
-                      onChange={(e) => setNewDataRoom({
-                        ...newDataRoom,
-                        geoRestriction: {
-                          ...newDataRoom.geoRestriction,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-600">Activer la restriction</span>
-                  </label>
-                </div>
-                {newDataRoom.geoRestriction.enabled && (
-                  <div className="space-y-2">
-                    <Select
-                      isMulti
-                      options={countryOptions}
-                      onChange={handleCountryChange}
-                      placeholder="Sélectionnez les pays autorisés..."
-                      className="basic-multi-select"
-                      classNamePrefix="select"
-                      isSearchable={true}
-                      formatGroupLabel={data => (
-                        <div className="font-semibold text-gray-700">
-                          {continents[data.label as keyof typeof continents]}
-                        </div>
-                      )}
-                    />
-                    <p className="text-sm text-gray-500">
-                      Les utilisateurs ne pourront accéder à la Data Room que depuis les pays sélectionnés
-                    </p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Niveau de sécurité
+                </label>
+                <div className="px-2">
+                  <ReactSlider
+                    className="w-full h-4 pr-2 my-4"
+                    thumbClassName="absolute w-4 h-4 cursor-grab bg-teal-600 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 -top-1"
+                    trackClassName="h-2 bg-gray-200 rounded-full"
+                    value={newDataRoom.securityLevel}
+                    onChange={(value) => setNewDataRoom({...newDataRoom, securityLevel: value})}
+                    min={0}
+                    max={100}
+                  />
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Standard</span>
+                    <span>Élevé</span>
                   </div>
-                )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type d'accès
+                </label>
+                <Select
+                  value={newDataRoom.accessType}
+                  onChange={(option) => setNewDataRoom({...newDataRoom, accessType: option})}
+                  options={accessTypeOptions}
+                  className="w-full"
+                  classNamePrefix="select"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fréquence des notifications
+                </label>
+                <Select
+                  value={newDataRoom.notificationFrequency}
+                  onChange={(option) => setNewDataRoom({...newDataRoom, notificationFrequency: option})}
+                  options={notificationOptions}
+                  className="w-full"
+                  classNamePrefix="select"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filigrane personnalisé
+                </label>
+                <input
+                  type="text"
+                  value={newDataRoom.customWatermark}
+                  onChange={(e) => setNewDataRoom({...newDataRoom, customWatermark: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Ex: CONFIDENTIEL - {user_email} - {date}"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Variables disponibles: {'{user_email}'}, {'{date}'}, {'{time}'}, {'{ip_address}'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre maximum de vues par document
+                </label>
+                <input
+                  type="number"
+                  value={newDataRoom.maxViewsPerDocument}
+                  onChange={(e) => setNewDataRoom({...newDataRoom, maxViewsPerDocument: parseInt(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  min="0"
+                  placeholder="0 = illimité"
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-4">
-                  Paramètres de sécurité
+                  Paramètres de sécurité avancés
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center">
@@ -356,6 +387,26 @@ const DashboardPage = () => {
                       className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-600">Authentification à deux facteurs requise</span>
+                  </label>
+
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.autoDelete}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, autoDelete: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Suppression automatique après expiration</span>
+                  </label>
+
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.allowScreenshots}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, allowScreenshots: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Autoriser les captures d'écran</span>
                   </label>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import { Menu, X, Shield, ChevronDown } from 'lucide-react';
 import { Button } from './Button';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import Logo from "./Logo";
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -66,11 +66,9 @@ export const Navbar = () => {
   }}
   className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
 >
-  <Shield className="h-8 w-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
-  <span className="ml-2 text-xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
-    NeutVault
-  </span>
-</div>
+  <Logo size={32} textSize="text-xl" />
+          </div>
+
             <nav className="hidden md:flex space-x-8">
               <button onClick={() => handleNavigation('features')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
                 Fonctionnalités

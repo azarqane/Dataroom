@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { Shield, Mail, Lock, User } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
+import Logo from "../components/Logo";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -11,14 +16,61 @@ const AuthPage = () => {
     name: ''
   });
 
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Fonction de validation email
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // La logique d'authentification sera ajoutée plus tard
-    console.log('Form submitted:', formData);
+    setError(null);
+    setSuccess(null);
+
+    if (!validateEmail(formData.email)) {
+      setError("L'adresse email n'est pas valide");
+      return;
+    }
+
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas");
+      return;
+    }
+
+    setLoading(true);
+
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+      if (error) setError(error.message);
+      else {
+        setSuccess("Connexion réussie !");
+        setTimeout(() => navigate('/dashboard'), 1200);
+      }
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: { name: formData.name }
+        }
+      });
+      if (error) setError(error.message);
+      else {
+        setSuccess("Inscription réussie !");
+        setTimeout(() => navigate('/dashboard'), 1200);
+      }
+    }
+    setLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,10 +85,10 @@ const AuthPage = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="flex items-center">
-            <Shield className="h-12 w-12 text-teal-600" />
-            <span className="ml-3 text-3xl font-bold text-gray-900">NeutVault</span>
-          </div>
+          <div className="flex justify-center">
+  <Logo size={48} textSize="text-3xl" />
+</div>
+
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
           {isLogin ? 'Connexion à votre compte' : 'Créer un compte'}
@@ -45,7 +97,7 @@ const AuthPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {!isLogin && (
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -159,9 +211,12 @@ const AuthPage = () => {
             )}
 
             <div>
-              <Button type="submit" variant="primary" className="w-full">
+              <Button type="submit" variant="primary" className="w-full" disabled={loading}>
                 {isLogin ? 'Se connecter' : "S'inscrire"}
               </Button>
+              {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
+              {success && <p className="text-green-600 text-sm text-center mt-2">{success}</p>}
+              {loading && <p className="text-gray-500 text-sm text-center mt-2">Traitement en cours...</p>}
             </div>
           </form>
 
@@ -179,7 +234,11 @@ const AuthPage = () => {
 
             <div className="mt-6">
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError(null);
+                  setSuccess(null);
+                }}
                 className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
               >
                 {isLogin ? 'Créer un nouveau compte' : 'Se connecter'}

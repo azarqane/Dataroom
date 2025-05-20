@@ -1,8 +1,59 @@
-import React from 'react';
-import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut, Plus, Globe, Clock, Lock, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '../components/Button';
+
+interface DataRoom {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  expiresAt: string;
+  status: 'active' | 'expired';
+  geoRestriction: string[];
+  documentsCount: number;
+  usersCount: number;
+}
 
 const DashboardPage = () => {
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [dataRooms] = useState<DataRoom[]>([
+    {
+      id: '1',
+      name: 'Due Diligence Projet Alpha',
+      description: 'Documents confidentiels pour la fusion avec Alpha Corp',
+      createdAt: '2024-02-20',
+      expiresAt: '2024-05-20',
+      status: 'active',
+      geoRestriction: ['France', 'Belgique'],
+      documentsCount: 45,
+      usersCount: 12
+    },
+    {
+      id: '2',
+      name: 'Audit Financier 2024',
+      description: 'Documentation pour l\'audit annuel',
+      createdAt: '2024-01-15',
+      expiresAt: '2024-04-15',
+      status: 'active',
+      geoRestriction: ['France'],
+      documentsCount: 28,
+      usersCount: 8
+    }
+  ]);
+
+  const [newDataRoom, setNewDataRoom] = useState({
+    name: '',
+    description: '',
+    expiresAt: '',
+    geoRestriction: [] as string[],
+    securityLevel: 'high',
+    watermark: true,
+    preventDownload: true,
+    preventPrinting: true,
+    twoFactorAuth: true
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -18,7 +69,7 @@ const DashboardPage = () => {
           <div className="px-3 space-y-1">
             {[
               { icon: Home, label: 'Accueil', href: '/dashboard' },
-              { icon: FileText, label: 'Documents', href: '/dashboard/documents' },
+              { icon: FileText, label: 'Data Rooms', href: '/dashboard/datarooms' },
               { icon: Users, label: 'Utilisateurs', href: '/dashboard/users' },
               { icon: Settings, label: 'Paramètres', href: '/dashboard/settings' },
             ].map((item) => (
@@ -52,7 +103,7 @@ const DashboardPage = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Rechercher..."
+                  placeholder="Rechercher une Data Room..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
@@ -78,51 +129,209 @@ const DashboardPage = () => {
 
         {/* Main content */}
         <main className="p-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Mes Data Rooms</h1>
+            <Button 
+              variant="primary" 
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Créer une Data Room
+            </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {[
-              { label: 'Documents totaux', value: '128' },
-              { label: 'Utilisateurs actifs', value: '25' },
-              { label: 'Espace utilisé', value: '4.2 GB' }
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="text-sm font-medium text-gray-600">{stat.label}</div>
-                <div className="mt-2 text-3xl font-semibold text-gray-900">{stat.value}</div>
+          {/* Data Rooms Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {dataRooms.map((dataRoom) => (
+              <div key={dataRoom.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{dataRoom.name}</h3>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    dataRoom.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {dataRoom.status === 'active' ? 'Active' : 'Expirée'}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-4">{dataRoom.description}</p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Expire le {new Date(dataRoom.expiresAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Globe className="h-4 w-4 mr-2" />
+                    {dataRoom.geoRestriction.join(', ')}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FileText className="h-4 w-4 mr-2" />
+                    {dataRoom.documentsCount} documents
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="h-4 w-4 mr-2" />
+                    {dataRoom.usersCount} utilisateurs
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex space-x-3">
+                  <Button variant="primary" className="flex-1">
+                    Accéder
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    Paramètres
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
-
-          {/* Recent activity */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Activité récente</h2>
-            <div className="space-y-4">
-              {[
-                { user: 'Alice Martin', action: 'a ajouté un document', time: 'Il y a 5 minutes' },
-                { user: 'Bob Wilson', action: 'a modifié les permissions', time: 'Il y a 2 heures' },
-                { user: 'Carol White', action: 'a supprimé un fichier', time: 'Il y a 4 heures' }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-gray-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        <span className="font-medium">{activity.user}</span> {activity.action}
-                      </p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </main>
       </div>
+
+      {/* Create Data Room Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">Créer une nouvelle Data Room</h2>
+                <button 
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+            
+            <form className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom de la Data Room
+                </label>
+                <input
+                  type="text"
+                  value={newDataRoom.name}
+                  onChange={(e) => setNewDataRoom({...newDataRoom, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Ex: Due Diligence Projet Alpha"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={newDataRoom.description}
+                  onChange={(e) => setNewDataRoom({...newDataRoom, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  rows={3}
+                  placeholder="Description du projet et objectifs..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date d'expiration
+                </label>
+                <input
+                  type="date"
+                  value={newDataRoom.expiresAt}
+                  onChange={(e) => setNewDataRoom({...newDataRoom, expiresAt: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Restrictions géographiques
+                </label>
+                <select
+                  multiple
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  onChange={(e) => {
+                    const values = Array.from(e.target.selectedOptions, option => option.value);
+                    setNewDataRoom({...newDataRoom, geoRestriction: values});
+                  }}
+                >
+                  <option value="France">France</option>
+                  <option value="Belgique">Belgique</option>
+                  <option value="Suisse">Suisse</option>
+                  <option value="Luxembourg">Luxembourg</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                  Paramètres de sécurité
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.watermark}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, watermark: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Filigrane dynamique sur les documents</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.preventDownload}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, preventDownload: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Empêcher le téléchargement</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.preventPrinting}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, preventPrinting: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Empêcher l'impression</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newDataRoom.twoFactorAuth}
+                      onChange={(e) => setNewDataRoom({...newDataRoom, twoFactorAuth: e.target.checked})}
+                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Authentification à deux facteurs requise</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  variant="primary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Logique de création à implémenter
+                    setShowCreateModal(false);
+                  }}
+                >
+                  Créer la Data Room
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

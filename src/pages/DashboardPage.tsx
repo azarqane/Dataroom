@@ -1,60 +1,175 @@
-import React, { useState, useCallback } from 'react';
-import { Shield, Search, Bell, User, Home, FileText, Users, Settings, LogOut, Upload, Eye, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useDropzone } from 'react-dropzone';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import toast from 'react-hot-toast';
-
-interface Document {
-  id: string;
-  name: string;
-  size: number;
-  uploadedAt: Date;
-  views: number;
-}
+import React, { useState } from 'react';
+import { Shield, Search, Bell, User, FileText, Users, Settings, LogOut, Database } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const DashboardPage = () => {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const location = useLocation();
+  const [currentSection, setCurrentSection] = useState('dashboard');
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setIsUploading(true);
-    
-    // Simuler un upload
-    setTimeout(() => {
-      const newDocs = acceptedFiles.map(file => ({
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        size: file.size,
-        uploadedAt: new Date(),
-        views: 0
-      }));
-      
-      setDocuments(prev => [...newDocs, ...prev]);
-      setIsUploading(false);
-      toast.success(`${acceptedFiles.length} document(s) ajouté(s)`);
-    }, 1500);
-  }, []);
+  const navigation = [
+    { icon: Database, label: 'Dashboard', id: 'dashboard' },
+    { icon: FileText, label: 'Data Rooms', id: 'datarooms' },
+    { icon: Users, label: 'Utilisateurs', id: 'users' },
+    { icon: Settings, label: 'Paramètres', id: 'settings' },
+  ];
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'image/*': ['.png', '.jpg', '.jpeg'],
-      'video/*': ['.mp4', '.mov']
+  const renderContent = () => {
+    switch (currentSection) {
+      case 'dashboard':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Tableau de bord</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">Data Rooms actives</h3>
+                <p className="text-3xl font-bold text-teal-600">12</p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">Utilisateurs</h3>
+                <p className="text-3xl font-bold text-blue-600">48</p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">Documents</h3>
+                <p className="text-3xl font-bold text-purple-600">156</p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">Espace utilisé</h3>
+                <p className="text-3xl font-bold text-orange-600">2.4 GB</p>
+              </div>
+            </div>
+          </div>
+        );
+      case 'datarooms':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Data Rooms</h2>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Propriétaire</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dernière activité</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">Projet Alpha</td>
+                    <td className="px-6 py-4 whitespace-nowrap">John Doe</td>
+                    <td className="px-6 py-4 whitespace-nowrap">23</td>
+                    <td className="px-6 py-4 whitespace-nowrap">Il y a 2 heures</td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">Projet Beta</td>
+                    <td className="px-6 py-4 whitespace-nowrap">Jane Smith</td>
+                    <td className="px-6 py-4 whitespace-nowrap">15</td>
+                    <td className="px-6 py-4 whitespace-nowrap">Il y a 5 heures</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case 'users':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Utilisateurs</h2>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">John Doe</td>
+                    <td className="px-6 py-4 whitespace-nowrap">john@example.com</td>
+                    <td className="px-6 py-4 whitespace-nowrap">Administrateur</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Actif
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">Jane Smith</td>
+                    <td className="px-6 py-4 whitespace-nowrap">jane@example.com</td>
+                    <td className="px-6 py-4 whitespace-nowrap">Utilisateur</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Actif
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Paramètres</h2>
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Paramètres généraux</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Nom de l'organisation</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                        defaultValue="Mon Organisation"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Fuseau horaire</label>
+                      <select
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                      >
+                        <option>Europe/Paris</option>
+                        <option>Europe/London</option>
+                        <option>America/New_York</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Sécurité</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Authentification à deux facteurs</h4>
+                        <p className="text-sm text-gray-500">Ajouter une couche de sécurité supplémentaire à votre compte</p>
+                      </div>
+                      <button className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">
+                        Activer
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Sessions actives</h4>
+                        <p className="text-sm text-gray-500">Gérer les appareils connectés à votre compte</p>
+                      </div>
+                      <button className="text-teal-600 hover:text-teal-700">
+                        Voir les sessions
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
     }
-  });
-
-  const generateSecureLink = (docId: string) => {
-    const link = `https://vault.neutvault.fr/view/${docId}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Lien copié dans le presse-papier');
-  };
-
-  const deleteDocument = (docId: string) => {
-    setDocuments(prev => prev.filter(doc => doc.id !== docId));
-    toast.success('Document supprimé');
   };
 
   return (
@@ -70,20 +185,19 @@ const DashboardPage = () => {
         
         <nav className="mt-6">
           <div className="px-3 space-y-1">
-            {[
-              { icon: Home, label: 'Accueil', href: '/dashboard' },
-              { icon: FileText, label: 'Documents', href: '/dashboard/documents' },
-              { icon: Users, label: 'Utilisateurs', href: '/dashboard/users' },
-              { icon: Settings, label: 'Paramètres', href: '/dashboard/settings' },
-            ].map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100"
+            {navigation.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setCurrentSection(item.id)}
+                className={`flex items-center w-full px-3 py-2 rounded-lg transition-colors ${
+                  currentSection === item.id
+                    ? 'bg-teal-50 text-teal-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
               >
                 <item.icon className="h-5 w-5 mr-3" />
                 {item.label}
-              </Link>
+              </button>
             ))}
           </div>
         </nav>
@@ -132,85 +246,7 @@ const DashboardPage = () => {
 
         {/* Main content */}
         <main className="p-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Documents sécurisés</h1>
-          </div>
-
-          {/* Upload zone */}
-          <div 
-            {...getRootProps()} 
-            className={`mb-8 border-2 border-dashed rounded-xl p-8 text-center ${
-              isDragActive ? 'border-teal-500 bg-teal-50' : 'border-gray-300 hover:border-teal-500'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600">
-              {isDragActive
-                ? 'Déposez les fichiers ici...'
-                : 'Glissez-déposez vos fichiers ici, ou cliquez pour sélectionner'}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              PDF, images et vidéos acceptés
-            </p>
-          </div>
-
-          {/* Documents list */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="min-w-full divide-y divide-gray-200">
-              <div className="bg-gray-50 px-6 py-3">
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-4">Nom</div>
-                  <div className="col-span-2">Taille</div>
-                  <div className="col-span-2">Date</div>
-                  <div className="col-span-2">Vues</div>
-                  <div className="col-span-2">Actions</div>
-                </div>
-              </div>
-
-              <div className="divide-y divide-gray-200 bg-white">
-                {documents.map((doc) => (
-                  <div key={doc.id} className="px-6 py-4">
-                    <div className="grid grid-cols-12 gap-4 items-center">
-                      <div className="col-span-4 flex items-center">
-                        <FileText className="h-5 w-5 text-gray-400 mr-3" />
-                        <span className="text-gray-900">{doc.name}</span>
-                      </div>
-                      <div className="col-span-2 text-gray-500">
-                        {(doc.size / 1024 / 1024).toFixed(1)} MB
-                      </div>
-                      <div className="col-span-2 text-gray-500">
-                        {format(doc.uploadedAt, 'dd MMM yyyy', { locale: fr })}
-                      </div>
-                      <div className="col-span-2 text-gray-500">
-                        {doc.views}
-                      </div>
-                      <div className="col-span-2 flex space-x-2">
-                        <button
-                          onClick={() => generateSecureLink(doc.id)}
-                          className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => deleteDocument(doc.id)}
-                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {documents.length === 0 && (
-                  <div className="px-6 py-8 text-center text-gray-500">
-                    Aucun document pour le moment
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          {renderContent()}
         </main>
       </div>
     </div>

@@ -9,6 +9,9 @@ import {
   LogOut,
 } from 'lucide-react';
 import Logo from "../components/Logo";
+import DataRoomList from "../components/dashboard/DataRoomList";
+import CreateDataRoomModal from "../components/dashboard/CreateDataRoomModal";
+import DeleteDataRoomModal from "../components/dashboard/DeleteDataRoomModal";
 
 const DashboardPage = () => {
   const location = useLocation();
@@ -18,11 +21,21 @@ const DashboardPage = () => {
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Exemple : liste des datarooms de l'utilisateur connecté
   const [datarooms, setDatarooms] = useState<any[]>([]);
   const [loadingDatarooms, setLoadingDatarooms] = useState(false);
 
-  // Récupérer l'utilisateur connecté
+  // Modal création Data Room
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  // Modal suppression Data Room
+  const [deleteModal, setDeleteModal] = useState<{open: boolean, room?: any}>({open: false, room: undefined});
+  const [confirmName, setConfirmName] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -32,42 +45,116 @@ const DashboardPage = () => {
     fetchUser();
   }, []);
 
-  // Redirection si non connecté (après chargement)
   useEffect(() => {
     if (!loadingUser && !user) {
       navigate('/auth');
     }
   }, [user, loadingUser, navigate]);
 
-  // Récupérer les datarooms de l'utilisateur connecté
+  const fetchDataRooms = async () => {
+    if (!user) return;
+    setLoadingDatarooms(true);
+    const { data } = await supabase
+      .from('datarooms')
+      .select('*')
+      .eq('owner', user.id);
+    setDatarooms(data || []);
+    setLoadingDatarooms(false);
+  };
+
   useEffect(() => {
-    const fetchDataRooms = async () => {
-      if (!user) return;
-      setLoadingDatarooms(true);
-      const { data, error } = await supabase
-        .from('datarooms')
-        .select('*')
-        .eq('owner', user.id);
-      setDatarooms(data || []);
-      setLoadingDatarooms(false);
-    };
     fetchDataRooms();
+    // eslint-disable-next-line
   }, [user]);
 
-  // Gestion déconnexion
+  // Déconnexion utilisateur
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
   };
 
+  // --- Création Data Room ---
+  const handleCreateDataRoom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError(null);
+    if (!newRoomName.trim()) {
+      setCreateError("Le nom de la Data Room est requis.");
+      setCreating(false);
+      return;
+    }
+    const { error } = await supabase
+      .from('datarooms')
+      .insert({
+        name: newRoomName.trim(),
+        owner: user.id
+      });
+    if (error) {
+      setCreateError("Erreur lors de la création : " + error.message);
+      setCreating(false);
+      return;
+    }
+    setShowCreateModal(false);
+    setNewRoomName('');
+    setCreateError(null);
+    setCreating(false);
+    fetchDataRooms();
+  };
+
+  // --- Suppression Data Room ---
+  const handleDeleteDataRoom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeleteError(null);
+    if (!deleteModal.room) return;
+    if (confirmName.trim() !== deleteModal.room.name) {
+      setDeleteError("Le nom saisi ne correspond pas.");
+      return;
+    }
+    setDeleteLoading(true);
+    const { error } = await supabase
+      .from('datarooms')
+      .delete()
+      .eq('id', deleteModal.room.id);
+    setDeleteLoading(false);
+    if (error) {
+      setDeleteError("Erreur lors de la suppression : " + error.message);
+      return;
+    }
+    setDeleteModal({open: false, room: undefined});
+    setConfirmName('');
+    setDeleteError(null);
+    fetchDataRooms();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
+
+      {/* Modals */}
+      <CreateDataRoomModal
+        isOpen={showCreateModal}
+        loading={creating}
+        error={createError}
+        name={newRoomName}
+        onClose={() => setShowCreateModal(false)}
+        onChange={setNewRoomName}
+        onSubmit={handleCreateDataRoom}
+      />
+      <DeleteDataRoomModal
+        isOpen={deleteModal.open}
+        room={deleteModal.room}
+        loading={deleteLoading}
+        error={deleteError}
+        confirmName={confirmName}
+        onClose={() => setDeleteModal({open: false, room: undefined})}
+        onChange={setConfirmName}
+        onSubmit={handleDeleteDataRoom}
+      />
+
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-lg">
         <div className="p-6">
-  <Logo size={32} textSize="text-xl" />
-</div>
-
+          <Logo size={32} textSize="text-xl" />
+        </div>
         <nav className="mt-8">
           <ul>
             <li>
@@ -137,7 +224,6 @@ const DashboardPage = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-10">
-        {/* Header personnalisé */}
         <div className="flex items-center justify-between mb-10">
           <h1 className="text-3xl font-bold text-gray-900">
             {currentSection === 'dashboard'
@@ -161,43 +247,45 @@ const DashboardPage = () => {
             </span>
           </div>
         </div>
-
-        {/* Sections dynamiques */}
         {currentSection === 'dashboard' && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Bienvenue sur votre tableau de bord, {user?.user_metadata?.name || user?.email} !</h2>
             <p className="text-gray-600">Commencez par créer une data room, déposer des fichiers ou gérer vos accès.</p>
           </div>
         )}
-
         {currentSection === 'datarooms' && (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Mes Data Rooms</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Mes Data Rooms</h2>
+              <button
+                className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 transition-all duration-150"
+                onClick={() => {
+                  setShowCreateModal(true);
+                  setNewRoomName('');
+                  setCreateError(null);
+                }}
+              >
+                <span className="inline-flex items-center justify-center rounded-full bg-teal-700/30 w-6 h-6">
+                  <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5"><path d="M10 5v10m5-5H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                </span>
+                Créer une Data Room
+              </button>
+            </div>
             {loadingDatarooms ? (
               <p>Chargement…</p>
             ) : datarooms.length === 0 ? (
-              <p>Aucune data room pour le moment.</p>
+              <div className="text-gray-500">Aucune data room pour le moment.</div>
             ) : (
-              <ul>
-                {datarooms.map((room: any) => (
-                  <li key={room.id} className="p-4 mb-2 bg-white rounded shadow">
-                    <span className="font-bold">{room.name}</span>
-                    <span className="ml-3 text-xs text-gray-500">créée le {new Date(room.created_at).toLocaleDateString()}</span>
-                  </li>
-                ))}
-              </ul>
+              <DataRoomList datarooms={datarooms} onDelete={room => setDeleteModal({ open: true, room })} />
             )}
           </div>
         )}
-
         {currentSection === 'files' && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Gestion des Fichiers</h2>
-            {/* Ici, tu pourras afficher/filtrer les fichiers liés à l'utilisateur */}
             <p className="text-gray-600">À venir : affichage et gestion de vos fichiers.</p>
           </div>
         )}
-
         {currentSection === 'settings' && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Paramètres du compte</h2>

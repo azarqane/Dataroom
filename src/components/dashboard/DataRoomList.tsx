@@ -3,9 +3,10 @@ import React from 'react';
 interface DataRoomListProps {
   datarooms: any[];
   onDelete: (room: any) => void;
+  onGenerateLink: (room: any) => void;
 }
 
-export const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete }) => {
+const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGenerateLink }) => {
   return (
     <ul className="space-y-4">
       {datarooms.map((room: any) => (
@@ -20,6 +21,16 @@ export const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete 
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-150"
+              onClick={() => onGenerateLink(room)}
+              title="Générer un lien d'accès sécurisé"
+            >
+              <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
+                <path d="M8 12l4-4m0 0l-4-4m4 4H4m12 0a8 8 0 11-16 0 8 8 0 0116 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>Lien accès</span>
+            </button>
             <button
               className="flex items-center gap-1 px-4 py-1.5 rounded-lg font-semibold bg-red-50 text-red-700 border border-red-200 shadow-sm hover:bg-gradient-to-r hover:from-red-600 hover:to-pink-500 hover:text-white focus:ring-2 focus:ring-red-500 transition-all duration-150"
               onClick={() => onDelete(room)}

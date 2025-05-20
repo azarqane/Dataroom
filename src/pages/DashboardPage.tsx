@@ -12,10 +12,14 @@ import Logo from "../components/Logo";
 import DataRoomList from "../components/dashboard/DataRoomList";
 import CreateDataRoomModal from "../components/dashboard/CreateDataRoomModal";
 import DeleteDataRoomModal from "../components/dashboard/DeleteDataRoomModal";
+import GenerateAccessLinkModal from "../components/dashboard/GenerateAccessLinkModal";
 
 const DashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [showLinkModal, setShowLinkModal] = useState(false);
+const [selectedRoom, setSelectedRoom] = useState<any>(null);
+const [lastAccessLink, setLastAccessLink] = useState<string | null>(null);
 
   const [currentSection, setCurrentSection] = useState('dashboard');
   const [user, setUser] = useState<any>(null);
@@ -149,6 +153,16 @@ const DashboardPage = () => {
         onChange={setConfirmName}
         onSubmit={handleDeleteDataRoom}
       />
+      <GenerateAccessLinkModal
+  isOpen={showLinkModal}
+  room={selectedRoom}
+  onClose={() => {
+    setShowLinkModal(false);
+    setSelectedRoom(null);
+  }}
+  onCreated={link => setLastAccessLink(link)}
+/>
+
 
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-lg">
@@ -276,7 +290,16 @@ const DashboardPage = () => {
             ) : datarooms.length === 0 ? (
               <div className="text-gray-500">Aucune data room pour le moment.</div>
             ) : (
-              <DataRoomList datarooms={datarooms} onDelete={room => setDeleteModal({ open: true, room })} />
+              <DataRoomList
+  datarooms={datarooms}
+  onDelete={room => setDeleteModal({ open: true, room })}
+  onGenerateLink={room => {
+    setSelectedRoom(room);
+    setShowLinkModal(true);
+    setLastAccessLink(null);
+  }}
+/>
+
             )}
           </div>
         )}

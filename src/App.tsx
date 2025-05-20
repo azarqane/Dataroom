@@ -12,6 +12,7 @@ import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
+import { Toaster } from 'react-hot-toast';
 
 function AppWrapper() {
   const location = useLocation();
@@ -30,7 +31,12 @@ function AppWrapper() {
   }, [location]);
 
   if (isDashboard) {
-    return <DashboardPage />;
+    return (
+      <>
+        <DashboardPage />
+        <Toaster position="top-right" />
+      </>
+    );
   }
 
   return (
@@ -52,6 +58,7 @@ function AppWrapper() {
       </Routes>
       <Footer />
       <ScrollToTop />
+      <Toaster position="top-right" />
     </div>
   );
 }

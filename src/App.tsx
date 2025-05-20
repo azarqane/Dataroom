@@ -1,4 +1,3 @@
-// App.tsx
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
@@ -12,9 +11,11 @@ import { Footer } from './components/Footer';
 import { Helmet } from './components/Helmet';
 import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
+import DashboardPage from './pages/DashboardPage';
 
 function AppWrapper() {
   const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
 
   useEffect(() => {
     if (location.pathname === '/' && location.hash) {
@@ -27,6 +28,10 @@ function AppWrapper() {
       }
     }
   }, [location]);
+
+  if (isDashboard) {
+    return <DashboardPage />;
+  }
 
   return (
     <div className="min-h-screen bg-white">

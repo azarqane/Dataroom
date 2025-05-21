@@ -45,44 +45,72 @@ const AccessDataRoom = () => {
   }, [token]);
 
   // Soumission email invité
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!email || !accessLink) return;
+// Soumission email invité
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  if (!email || !accessLink) return;
 
-    // Vérification email (insensible à la casse)
-    if (
-      accessLink.email &&
-      accessLink.email.toLowerCase() !== email.trim().toLowerCase()
-    ) {
-      setError("Cet email n'est pas autorisé pour ce lien.");
-      return;
-    }
+  // Vérification email (insensible à la casse)
+  if (
+    accessLink.email &&
+    accessLink.email.toLowerCase() !== email.trim().toLowerCase()
+  ) {
+    setError("Cet email n'est pas autorisé pour ce lien.");
+    return;
+  }
 
-    // Re-check en temps réel (au cas où le quota a changé)
-    const { data: freshLink, error: refreshError } = await supabase
-      .from("access_links")
-      .select("id, usage_limit")
-      .eq("id", accessLink.id)
-      .single();
-    if (refreshError || !freshLink || typeof freshLink.usage_limit !== "number" || freshLink.usage_limit < 1) {
-      setError("Le quota d’utilisations de ce lien est atteint.");
-      return;
-    }
+  // Re-check en temps réel (au cas où le quota a changé)
+  const { data: freshLink, error: refreshError } = await supabase
+    .from("access_links")
+    .select("id, usage_limit")
+    .eq("id", accessLink.id)
+    .single();
+  if (refreshError || !freshLink || typeof freshLink.usage_limit !== "number" || freshLink.usage_limit < 1) {
+    setError("Le quota d’utilisations de ce lien est atteint.");
+    return;
+  }
 
-    // Décrémente le quota d’usage (transaction simple)
-    const { error: updateError } = await supabase
-      .from("access_links")
-      .update({ usage_limit: freshLink.usage_limit - 1 })
-      .eq("id", accessLink.id);
-    if (updateError) {
-      setError("Erreur lors de la mise à jour du quota.");
-      return;
-    }
+  // Ajoute le timestamp courant dans l'historique des accès
+  const now = new Date().toISOString();
 
-    setStep("access");
-    setShowPopup(true);
-  };
+// Récupère l'historique actuel des accès
+const { data: linkForUsage } = await supabase
+  .from("access_links")
+  .select("use_at")
+  .eq("id", accessLink.id)
+  .single();
+
+let use_at = [];
+if (linkForUsage?.use_at) {
+  use_at = Array.isArray(linkForUsage.use_at)
+    ? [...linkForUsage.use_at, now]
+    : [linkForUsage.use_at, now];
+} else {
+  use_at = [now];
+}
+
+// Mets à jour quota, le dernier accès, et l’historique
+const { error: updateError } = await supabase
+  .from("access_links")
+  .update({
+    usage_limit: freshLink.usage_limit - 1,
+    used_at: now,    // Dernier accès
+    use_at: use_at,  // Historique complet
+  })
+  .eq("id", accessLink.id);
+
+if (updateError) {
+  setError("Erreur lors de la mise à jour du quota.");
+  return;
+}
+
+
+
+  setStep("access");
+  setShowPopup(true);
+};
+
 
   if (step === "error") {
     return (

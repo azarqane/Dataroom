@@ -1,8 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { FolderOpen, ArrowLeft, FileText, Settings, Link, Loader2, Trash2, Eye, User2, Info, UploadCloud } from "lucide-react";
-import { toast } from 'react-hot-toast';
+import {
+  FolderOpen,
+  ArrowLeft,
+  FileText,
+  Settings,
+  Link,
+  Loader2,
+  Trash2,
+  Eye,
+  User2,
+  Info,
+  UploadCloud,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { v4 as uuidv4 } from "uuid";
 
 const DataRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,27 +29,40 @@ const DataRoomPage: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Description
-  const fakeDescription = "Partagez et protégez vos documents sensibles. Générer des accès sécurisés à la demande.";
+  const fakeDescription =
+    "Partagez et protégez vos documents sensibles. Générer des accès sécurisés à la demande.";
 
-  // Chargement Data Room, fichiers, liens, logs
+  // Récupération utilisateur
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user ?? null);
+    };
+    fetchUser();
+  }, []);
+
+  // Chargement des données
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
       setError(null);
+
       const { data: r, error: err } = await supabase
         .from("datarooms")
         .select("*")
         .eq("id", id)
         .single();
+
       if (err || !r) {
         setError("Data Room introuvable.");
         setLoading(false);
         return;
       }
+
       setRoom(r);
 
       const { data: filesData } = await supabase
@@ -56,90 +82,139 @@ const DataRoomPage: React.FC = () => {
       const { data: logsData } = await supabase
         .from("access_logs")
         .select("*")
-        .in("file_id", filesData?.map(f => f.id) || [])
+        .in("file_id", filesData?.map((f) => f.id) || [])
         .order("accessed_at", { ascending: false })
         .limit(5);
       setLogs(logsData || []);
+
       setLoading(false);
     };
 
     if (id) fetchRoom();
   }, [id]);
 
-  // Drag & Drop handlers
-  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
+  // Nettoyage nom fichier pour stockage
+  const cleanFileName = (filename: string) =>
+    filename.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9._-]/g, "");
+
+  // Suppression fichier (storage + base)
+  const handleDeleteFile = async (file: any) => {
+    if (!room) return;
+
+    if (
+      !confirm(
+        `Confirmez-vous la suppression du fichier "${file.name}" ? Cette action est irréversible.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const { error: storageError } = await supabase
+        .storage
+        .from("dataroom-files")
+        .remove([file.url]);
+
+      if (storageError) throw storageError;
+
+      const { error: dbError } = await supabase
+        .from("files")
+        .delete()
+        .eq("id", file.id);
+
+      if (dbError) throw dbError;
+
+      setFiles((prevFiles) => prevFiles.filter((f) => f.id !== file.id));
+      toast.success(`Fichier "${file.name}" supprimé avec succès.`);
+    } catch (err: any) {
+      toast.error(`Erreur lors de la suppression : ${err.message || err}`);
+    } finally {
+      setUploading(false);
     }
   };
 
-  // Gestion de l'upload
+  // Upload fichier
   const handleUpload = async (file: File) => {
-    if (!room) return;
-    setUploading(true);
+    if (!room || !user) return;
+
     try {
-      const storagePath = `${room.id}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase
-        .storage
-        .from('dataroom-files')
-        .upload(storagePath, file);
+      setUploading(true);
+
+      const safeFileName = `${uuidv4()}-${cleanFileName(file.name)}`;
+      const storagePath = `${room.id}/${safeFileName}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from("dataroom-files")
+        .upload(storagePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          metadata: { owner: user.id },
+        });
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
-        .from('files')
+      const { data: insertData, error: dbError } = await supabase
+        .from("files")
         .insert({
           dataroom_id: room.id,
           name: file.name,
           url: storagePath,
-          uploaded_at: new Date().toISOString(),
-        });
+        })
+        .select()
+        .single();
 
       if (dbError) throw dbError;
 
+      setFiles((prev) => [
+        {
+          id: insertData.id,
+          name: insertData.name,
+          url: insertData.url,
+          uploaded_at: insertData.uploaded_at || new Date().toISOString(),
+        },
+        ...prev,
+      ]);
+
       toast.success("Fichier uploadé avec succès !");
-
-      // Rafraîchir la liste
-      const { data: filesData, error: selectError } = await supabase
-        .from("files")
-        .select("*")
-        .eq("dataroom_id", room.id)
-        .order("uploaded_at", { ascending: false });
-
-      if (selectError) {
-        toast.error("Erreur lors du rafraîchissement des fichiers");
-      }
-      setFiles(filesData || []);
     } catch (err: any) {
-      toast.error("Erreur lors de l’upload : " + (err?.message || err));
+      toast.error("Erreur lors de l'upload : " + (err.message || err));
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
-  // Sélection fichier depuis le bouton ou input
+  // Sélection via input file
   const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       await handleUpload(file);
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
-  // Drag & Drop
+  // Click zone drag-drop déclenche input file
   const handleZoneClick = () => {
     if (!uploading) fileInputRef.current?.click();
+  };
+
+  // Gestion drag & drop
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
 
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-6 h-6 animate-spin text-teal-400" /> <span className="ml-2">Chargement...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-teal-400" />{" "}
+        <span className="ml-2">Chargement...</span>
       </div>
     );
+
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -152,7 +227,7 @@ const DataRoomPage: React.FC = () => {
       {/* RETOUR */}
       <div className="w-full max-w-3xl mb-6">
         <button
-          onClick={() => navigate('/dashboard?section=datarooms')}
+          onClick={() => navigate("/dashboard?section=datarooms")}
           className="flex items-center gap-2 text-teal-700 hover:text-teal-900 font-bold text-sm mb-2 transition"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -168,7 +243,9 @@ const DataRoomPage: React.FC = () => {
             <div>
               <div className="text-2xl font-extrabold text-teal-800">{room.name}</div>
               <div className="text-xs text-gray-400">
-                Créée le {new Date(room.created_at).toLocaleDateString()} &middot; {files.length} fichier{files.length > 1 ? "s" : ""} &middot; {links.length} accès généré{links.length > 1 ? "s" : ""}
+                Créée le {new Date(room.created_at).toLocaleDateString()} &middot;{" "}
+                {files.length} fichier{files.length > 1 ? "s" : ""} &middot; {links.length} accès généré
+                {links.length > 1 ? "s" : ""}
               </div>
             </div>
           </div>
@@ -206,7 +283,7 @@ const DataRoomPage: React.FC = () => {
             }
           }}
           onClick={handleZoneClick}
-          style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
+          style={{ cursor: uploading ? "not-allowed" : "pointer" }}
         >
           <input
             type="file"
@@ -215,7 +292,11 @@ const DataRoomPage: React.FC = () => {
             onChange={handleSelectFile}
             disabled={uploading}
           />
-          <UploadCloud className={`w-12 h-12 mx-auto mb-2 ${dragActive ? "text-teal-700" : "text-teal-300"}`} />
+          <UploadCloud
+            className={`w-12 h-12 mx-auto mb-2 ${
+              dragActive ? "text-teal-700" : "text-teal-300"
+            }`}
+          />
           <div className="text-lg font-semibold text-teal-700 mb-1">
             {uploading ? "Téléversement en cours..." : "Glissez-déposez vos fichiers ici"}
           </div>
@@ -224,7 +305,10 @@ const DataRoomPage: React.FC = () => {
           </div>
           <button
             className="px-5 py-2 rounded-xl bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition"
-            onClick={e => { e.stopPropagation(); handleZoneClick(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleZoneClick();
+            }}
             disabled={uploading}
           >
             Sélectionner un fichier
@@ -242,7 +326,7 @@ const DataRoomPage: React.FC = () => {
             </div>
           ) : (
             <ul className="space-y-2">
-              {files.map(file => (
+              {files.map((file) => (
                 <li
                   key={file.id}
                   className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border border-gray-100 shadow"
@@ -250,8 +334,14 @@ const DataRoomPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-teal-700" />
                     <span className="font-mono text-teal-800">{file.name}</span>
-                    <span className="ml-2 text-xs text-gray-500">{file.url?.split('.').pop()?.toUpperCase() || "FICHIER"}</span>
-                    <span className="ml-2 text-xs text-gray-400">{file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString() : ""}</span>
+                    <span className="ml-2 text-xs text-gray-500">
+                      {file.url?.split(".").pop()?.toUpperCase() || "FICHIER"}
+                    </span>
+                    <span className="ml-2 text-xs text-gray-400">
+                      {file.uploaded_at
+                        ? new Date(file.uploaded_at).toLocaleDateString()
+                        : ""}
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -263,8 +353,9 @@ const DataRoomPage: React.FC = () => {
                     </button>
                     <button
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200 font-semibold"
-                      onClick={() => alert("Suppression à venir")}
+                      onClick={() => handleDeleteFile(file)}
                       title="Supprimer"
+                      disabled={uploading} // optionnel, bloque pendant suppression
                     >
                       <Trash2 className="w-4 h-4" /> Supprimer
                     </button>
@@ -286,7 +377,7 @@ const DataRoomPage: React.FC = () => {
             </div>
           ) : (
             <ul className="space-y-2">
-              {links.map(l => (
+              {links.map((l) => (
                 <li
                   key={l.id}
                   className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2 border border-gray-100"
@@ -294,12 +385,20 @@ const DataRoomPage: React.FC = () => {
                   <div className="flex flex-col">
                     <span className="text-teal-700 text-sm">{l.email}</span>
                     <span className="text-xs text-gray-500">
-                      Expire : {l.expires_at ? new Date(l.expires_at).toLocaleDateString() : "jamais"} — Usage : {l.usage_limit ?? "illimité"}
+                      Expire :{" "}
+                      {l.expires_at
+                        ? new Date(l.expires_at).toLocaleDateString()
+                        : "jamais"}{" "}
+                      — Usage : {l.usage_limit ?? "illimité"}
                     </span>
                   </div>
                   <button
                     className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold"
-                    onClick={() => {navigator.clipboard.writeText(window.location.origin + "/access/" + l.token);}}
+                    onClick={() =>
+                      navigator.clipboard.writeText(
+                        window.location.origin + "/access/" + l.token
+                      )
+                    }
                     title="Copier le lien"
                   >
                     <Link className="w-4 h-4" /> Copier
@@ -321,10 +420,12 @@ const DataRoomPage: React.FC = () => {
             </div>
           ) : (
             <ul className="space-y-1">
-              {logs.map(log => (
+              {logs.map((log) => (
                 <li key={log.id} className="flex items-center gap-2 text-sm">
                   <span className="text-teal-700">{log.user_email}</span>
-                  <span className="text-gray-500">{log.accessed_at ? new Date(log.accessed_at).toLocaleString() : ""}</span>
+                  <span className="text-gray-500">
+                    {log.accessed_at ? new Date(log.accessed_at).toLocaleString() : ""}
+                  </span>
                   {log.ip_address && (
                     <span className="text-xs text-gray-400">({log.ip_address})</span>
                   )}

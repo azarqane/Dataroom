@@ -14,7 +14,7 @@ import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import { Toaster } from 'react-hot-toast';
 import DataRoomPage from './pages/DataRoomPage';
-
+import AccessDataRoom from "./pages/access/AccessDataRoom";
 function AppWrapper() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
@@ -36,6 +36,7 @@ function AppWrapper() {
       <Helmet />
       {isLanding && <Navbar />}
       <Routes>
+        <Route path="/access/:token" element={<AccessDataRoom />} />
         <Route path="/" element={
           <main>
             <Hero />

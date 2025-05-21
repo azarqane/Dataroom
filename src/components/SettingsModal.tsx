@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { v4 as uuidv4 } from "uuid";
-import { ClipboardCopy, X, Trash2, Info } from "lucide-react";
+import { ClipboardCopy, ArrowLeft, X, Trash2, Info, Settings as Gear } from "lucide-react";
 import { toast } from "react-hot-toast";
 import countryList from 'react-select-country-list';
 
@@ -11,7 +11,7 @@ type ThumbBubbleProps = {
   style?: React.CSSProperties;
 };
 const ThumbBubble: React.FC<ThumbBubbleProps> = ({ value, unit = '', style = {} }) => (
-  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white/90 border border-gray-200 shadow-md rounded-xl px-3 py-1 text-xs font-bold text-teal-600 pointer-events-none select-none transition"
+  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white/90 border border-gray-200 shadow-lg rounded-2xl px-4 py-1 text-xs font-semibold text-teal-700 pointer-events-none select-none transition font-sans z-30"
     style={style}>
     {value}{unit}
   </div>
@@ -53,15 +53,14 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     }
   }
 
-  // Data Room (standard)
+  // States
   const [roomName, setRoomName] = useState(room.name);
   const [description, setDescription] = useState(room.description || "");
   const [validity, setValidity] = useState<number>(room.valid_until ? getRemainingDays(room.valid_until) : 30);
-  const [password, setPassword] = useState(""); // Protection par mot de passe
-  const [welcomeMsg, setWelcomeMsg] = useState(""); // Message d'accueil
+  const [password, setPassword] = useState("");
+  const [welcomeMsg, setWelcomeMsg] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Avancé
   const [notifyOnAccess, setNotifyOnAccess] = useState(false);
   const [downloadDisabled, setDownloadDisabled] = useState(false);
   const [watermarkEnabled, setWatermarkEnabled] = useState(false);
@@ -69,7 +68,6 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
   const [allowedDomains, setAllowedDomains] = useState<string>("");
   const [maxConcurrentUsers, setMaxConcurrentUsers] = useState<number>(5);
 
-  // Partage
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -111,10 +109,9 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
-  // Save Data Room general settings
+  // Handler
   async function handleSaveGeneral() {
     setIsSaving(true);
-    // On stockera plus tard le mot de passe, le message, etc. côté backend !
     const validUntil = addDays(new Date(), validity);
     const { error } = await supabase
       .from("datarooms")
@@ -122,7 +119,6 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
         name: roomName,
         description,
         valid_until: validUntil.toISOString(),
-        // password, welcomeMsg, etc. seront ajoutés plus tard au backend
       })
       .eq("id", room.id);
     setIsSaving(false);
@@ -134,7 +130,6 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     }
   }
 
-  // Suppression data room
   async function handleDeleteRoom() {
     if (!window.confirm("Suppression définitive de la Data Room ?")) return;
     const { error } = await supabase.from("datarooms").delete().eq("id", room.id);
@@ -147,7 +142,6 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     }
   }
 
-  // Création lien d'accès avec paramètres avancés
   async function handleCreateLink() {
     setCreating(true);
     setError("");
@@ -218,26 +212,47 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     afterChange?.();
     toast.success("Lien révoqué !");
   }
-
+useEffect(() => {
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "Escape") onClose();
+  }
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-teal-100/80 via-white/90 to-blue-100/80 overflow-auto">
-      <div className="relative bg-white/95 rounded-3xl shadow-2xl p-8 w-full max-w-3xl min-h-[580px] transition-all"
-        style={{ backdropFilter: "blur(10px)" }}>
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-teal-100/90 via-white/95 to-blue-100/90 font-sans overflow-auto"
+    onClick={onClose} // Clic dehors ferme la modale
+  >
+    <div
+      className="relative bg-white/95 rounded-3xl shadow-2xl p-0 w-[950px] h-[970px] flex flex-col transition-all ring-2 ring-teal-100/50"
+      style={{ backdropFilter: "blur(10px)" }}
+      onClick={e => e.stopPropagation()} // Empêche le clic intérieur de fermer
+    >
+
+        {/* Fleche retour */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-xl hover:bg-teal-700 active:scale-95 transition"
-        >Fermer</button>
+          className="absolute top-7 left-7 bg-white/80 hover:bg-teal-100 text-teal-700 border border-teal-100 rounded-full p-2 shadow transition z-20"
+          title="Fermer"
+        >
+          <ArrowLeft className="w-7 h-7" />
+        </button>
 
-        <h2 className="text-2xl font-extrabold text-teal-700 mb-7 text-center">Paramètres</h2>
+        {/* Engrenage centré */}
+        <div className="flex items-center justify-center mt-9 mb-6">
+          
+        </div>
 
-        <div className="flex border-b-2 mb-7 gap-1">
+        {/* Onglets */}
+        <div className="flex border-b-2 mb-8 gap-2 justify-center">
           {TABS.map(t => (
             <button
               key={t.key}
-              className={`py-2 px-6 font-bold text-lg border-b-4 rounded-t-xl bg-white/90 transition-all duration-200
+              className={`py-3 px-7 font-bold text-lg border-b-4 rounded-t-2xl transition-all duration-200 font-sans
                 ${tab === t.key
-                  ? "border-teal-600 text-teal-800 shadow"
-                  : "border-transparent text-gray-500 hover:text-teal-500 hover:bg-teal-100/30"}`}
+                  ? "border-teal-700 text-teal-900 bg-teal-100/30 shadow-md"
+                  : "border-transparent text-gray-400 hover:text-teal-600 hover:bg-teal-100/40"}`}
               onClick={() => switchTab(t.key as "general" | "share" | "advanced")}
             >
               {t.label}
@@ -245,329 +260,349 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
           ))}
         </div>
 
-        {/* DATA ROOM */}
-        {tab === "general" && (
-          <div className="space-y-4">
-            <label className="block font-bold mb-1">Nom</label>
-            <input
-              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold"
-              value={roomName}
-              onChange={e => setRoomName(e.target.value)}
-            />
-
-            <label className="block font-bold mb-1">Description</label>
-            <textarea
-              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              rows={2}
-            />
-
-            <div>
-              <label className="block font-bold mb-1 flex items-center gap-2">
-                Validité de la data room
-                <span title="Nombre de jours avant expiration automatique de la room" className="inline-flex">
-                  <Info className="w-4 h-4 text-teal-500" />
-                </span>
-              </label>
-              <div className="flex items-center gap-3 relative group mb-2">
-                <div className="relative w-full">
-                  <input
-                    type="range"
-                    min={1}
-                    max={365}
-                    value={validity}
-                    onChange={e => setValidity(Number(e.target.value))}
-                    className="w-full accent-teal-600 h-2 rounded-full bg-teal-200"
-                    onMouseDown={() => setShowValidityBubble(true)}
-                    onMouseUp={() => setShowValidityBubble(false)}
-                    onMouseLeave={() => setShowValidityBubble(false)}
-                  />
-                  {showValidityBubble && (
-                    <ThumbBubble value={validity} unit="j" />
-                  )}
-                </div>
-                <span className="text-base font-semibold text-teal-700 w-24 text-right">
-                  {validity} jours
-                  <br />
-                  <span className="text-xs text-gray-500">
-                    Expire&nbsp;: {getExpireDate(validity)}
+        <div className="flex-1 min-h-0 px-12 pb-8 flex flex-col">
+          {/* ----------- DATA ROOM ------------ */}
+          {tab === "general" && (
+            <div className="space-y-6">
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Nom
+                </label>
+                <input
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold transition"
+                  value={roomName}
+                  onChange={e => setRoomName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Description
+                </label>
+                <textarea
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base transition"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2">
+                  Validité de la data room
+                  <span title="Nombre de jours avant expiration automatique de la room" className="inline-flex">
+                    <Info className="w-5 h-5 text-teal-400" />
                   </span>
-                </span>
+                </label>
+                <div className="flex items-center gap-3 relative group mb-2">
+                  <div className="relative w-full">
+                    <input
+                      type="range"
+                      min={1}
+                      max={365}
+                      value={validity}
+                      onChange={e => setValidity(Number(e.target.value))}
+                      className="w-full accent-teal-600 h-2 rounded-full bg-teal-200"
+                      onMouseDown={() => setShowValidityBubble(true)}
+                      onMouseUp={() => setShowValidityBubble(false)}
+                      onMouseLeave={() => setShowValidityBubble(false)}
+                    />
+                    {showValidityBubble && (
+                      <ThumbBubble value={validity} unit="j" />
+                    )}
+                  </div>
+                  <span className="text-base font-semibold text-teal-700 w-28 text-right">
+                    {validity} jours
+                    <br />
+                    <span className="text-xs text-gray-500 font-normal">
+                      Expire : {getExpireDate(validity)}
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Mot de passe d’accès (optionnel)
+                </label>
+                <input
+                  type="password"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Définir un mot de passe pour accéder à la room"
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Message d’accueil personnalisé
+                </label>
+                <input
+                  type="text"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition"
+                  value={welcomeMsg}
+                  onChange={e => setWelcomeMsg(e.target.value)}
+                  placeholder="Message affiché à l’ouverture de la room"
+                />
+              </div>
+              <div className="flex flex-col md:flex-row justify-between gap-4 pt-5">
+                <button
+                  onClick={handleSaveGeneral}
+                  disabled={isSaving}
+                  className="flex-1 bg-gradient-to-r from-teal-500 to-teal-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-teal-600 hover:to-teal-800 active:scale-95 transition"
+                >{isSaving ? "Enregistrement..." : "Enregistrer"}</button>
+                <button
+                  onClick={handleDeleteRoom}
+                  className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-red-600 hover:to-pink-600 active:scale-95 transition flex items-center justify-center gap-2 mt-4 md:mt-0"
+                ><Trash2 className="inline-block w-5 h-5 -mt-0.5" /> Supprimer la Data Room</button>
               </div>
             </div>
+          )}
 
-            <label className="block font-bold mb-1">Mot de passe d’accès (optionnel)</label>
-            <input
-              type="password"
-              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Définir un mot de passe pour accéder à la room"
-            />
-
-            <label className="block font-bold mb-1">Message d’accueil personnalisé</label>
-            <input
-              type="text"
-              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
-              value={welcomeMsg}
-              onChange={e => setWelcomeMsg(e.target.value)}
-              placeholder="Message affiché à l’ouverture de la room"
-            />
-
-            <div className="flex justify-between gap-3 pt-4">
-              <button
-                onClick={handleSaveGeneral}
-                disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-teal-500 to-teal-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:from-teal-600 hover:to-teal-800 transition"
-              >{isSaving ? "Enregistrement..." : "Enregistrer"}</button>
-              <button
-                onClick={handleDeleteRoom}
-                className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:from-red-600 hover:to-pink-600 transition"
-              ><Trash2 className="inline-block w-5 h-5 mr-2 -mt-1" /> Supprimer la Data Room</button>
-            </div>
-          </div>
-        )}
-
-        {/* PARTAGE */}
-        {tab === "share" && (
-          <div className="space-y-8">
-            <div>
-              <h3 className="font-bold text-teal-700 mb-3 text-lg">Créer un lien d’accès</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label>Nom invité <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Prénom"
-                    className="block w-full mt-1 mb-2 px-3 py-2 border rounded-xl bg-gray-50"
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                  />
+          {/* ----------- PARTAGE ------------ */}
+          {tab === "share" && (
+            <div className="flex flex-col h-full min-h-0">
+              {/* Bloc formulaire d'invitation */}
+              <div className="mb-7">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                  <div>
+                    <label className="block font-bold mb-2 text-teal-800 text-base">
+                      Nom invité <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Prénom"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-2 text-teal-800 text-base">
+                      Prénom invité <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nom"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block font-bold mb-2 text-teal-800 text-base">
+                      Email invité <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Email invité"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label>Prénom invité <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nom"
-                    className="block w-full mt-1 mb-2 px-3 py-2 border rounded-xl bg-gray-50"
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label>Email invité <span className="text-red-500">*</span></label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="Email invité"
-                    className="block w-full mt-1 mb-2 px-3 py-2 border rounded-xl bg-gray-50"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-center gap-2 mb-1">
-                Validité du lien d'accès&nbsp;
-                <span title="Durée de validité du lien" className="inline-flex">
-                  <Info className="w-4 h-4 text-teal-500" />
-                </span>
-                <span className="font-bold text-teal-700 ml-2">{expiresDays} jours</span>
-              </label>
-              <div className="flex items-center gap-3 relative group mb-2">
-                <div className="relative w-full">
-                  <input
-                    type="range"
-                    min={1}
-                    max={60}
-                    value={expiresDays}
-                    onChange={e => setExpiresDays(Number(e.target.value))}
-                    className="w-full accent-blue-600 h-2 rounded-full bg-blue-100"
-                    onMouseDown={() => setShowExpireBubble(true)}
-                    onMouseUp={() => setShowExpireBubble(false)}
-                    onMouseLeave={() => setShowExpireBubble(false)}
-                  />
-                  {showExpireBubble && (
-                    <ThumbBubble value={expiresDays} unit="j" />
-                  )}
-                </div>
-                <span className="w-40 text-right text-base text-blue-700">
-                  {expiresDays} jours<br />
-                  <span className="text-xs text-gray-500">
-                    Expire&nbsp;: {getExpireDate(expiresDays)}
+                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2">
+                  Validité du lien d'accès
+                  <span title="Durée de validité du lien" className="inline-flex">
+                    <Info className="w-5 h-5 text-teal-400" />
                   </span>
-                </span>
-              </div>
-
-              <label className="mb-1">Nombre d’utilisations <span className="text-red-500">*</span></label>
-              <div className="flex items-center gap-3 relative group mb-2">
-                <div className="relative w-full">
-                  <input
-                    type="range"
-                    min={1}
-                    max={30}
-                    value={usageLimit}
-                    onChange={e => setUsageLimit(e.target.value)}
-                    className="w-full accent-violet-600 h-2 rounded-full bg-violet-100"
-                    onMouseDown={() => setShowUsageBubble(true)}
-                    onMouseUp={() => setShowUsageBubble(false)}
-                    onMouseLeave={() => setShowUsageBubble(false)}
-                  />
-                  {showUsageBubble && (
-                    <ThumbBubble value={usageLimit} unit="x" />
-                  )}
+                </label>
+                <div className="flex items-center gap-3 relative group mb-2">
+                  <div className="relative w-full">
+                    <input
+                      type="range"
+                      min={1}
+                      max={60}
+                      value={expiresDays}
+                      onChange={e => setExpiresDays(Number(e.target.value))}
+                      className="w-full accent-blue-600 h-2 rounded-full bg-blue-100"
+                      onMouseDown={() => setShowExpireBubble(true)}
+                      onMouseUp={() => setShowExpireBubble(false)}
+                      onMouseLeave={() => setShowExpireBubble(false)}
+                    />
+                    {showExpireBubble && (
+                      <ThumbBubble value={expiresDays} unit="j" />
+                    )}
+                  </div>
+                  <span className="w-44 text-right text-base text-blue-700">
+                    {expiresDays} jours<br />
+                    <span className="text-xs text-gray-500 font-normal">
+                      Expire : {getExpireDate(expiresDays)}
+                    </span>
+                  </span>
                 </div>
-                <span className="w-24 text-right text-violet-700 font-semibold text-base">
-                  {usageLimit} fois
-                </span>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Nombre d’utilisations <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center gap-3 relative group mb-2">
+                  <div className="relative w-full">
+                    <input
+                      type="range"
+                      min={1}
+                      max={30}
+                      value={usageLimit}
+                      onChange={e => setUsageLimit(e.target.value)}
+                      className="w-full accent-violet-600 h-2 rounded-full bg-violet-100"
+                      onMouseDown={() => setShowUsageBubble(true)}
+                      onMouseUp={() => setShowUsageBubble(false)}
+                      onMouseLeave={() => setShowUsageBubble(false)}
+                    />
+                    {showUsageBubble && (
+                      <ThumbBubble value={usageLimit} unit="x" />
+                    )}
+                  </div>
+                  <span className="w-28 text-right text-violet-700 font-semibold text-base">
+                    {usageLimit} fois
+                  </span>
+                </div>
+                <label className="inline-flex items-center mt-3 mb-2 cursor-pointer select-none gap-3 text-base font-bold text-teal-800">
+                  <input
+                    type="checkbox"
+                    checked={geoRestricted}
+                    onChange={() => setGeoRestricted(!geoRestricted)}
+                    className="form-checkbox accent-blue-600 border-2 border-blue-200 h-5 w-5 rounded-md"
+                  />
+                  Restreindre géographiquement
+                </label>
+                {geoRestricted && (
+                  <select
+                    className="block w-full mb-2 px-4 py-3 border-2 border-blue-100 rounded-2xl bg-gray-50"
+                    value={selectedCountry || ""}
+                    onChange={e => setSelectedCountry(e.target.value)}
+                  >
+                    <option value="">-- Choisir un pays --</option>
+                    {countryOptions.map((country: { label: string; value: string }) => (
+                      <option key={country.value} value={country.label}>{country.label}</option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  onClick={handleCreateLink}
+                  disabled={creating}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-blue-600 hover:to-blue-800 active:scale-95 transition mt-6 text-lg"
+                >{creating ? "Création..." : "Générer un accès invité"}</button>
+                {error && <div className="text-red-500 mt-3 text-base font-semibold">{error}</div>}
               </div>
 
-              <label className="inline-flex items-center mt-2 mb-2 cursor-pointer select-none gap-2">
+              {/* Bloc scrollable de la liste des liens */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <h4 className="font-bold mb-4 text-teal-700 text-lg">Liens existants</h4>
+                <div
+                  className="rounded-xl border border-gray-100 bg-white/70 flex-1 min-h-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent"
+                  style={{ minHeight: "100px", maxHeight: "100%" }}
+                >
+                  <ul className="space-y-4">
+                    {links.map((l) => (
+                      <li key={l.id} className="flex flex-col md:flex-row md:items-center justify-between text-base border-b pb-3 gap-3 md:gap-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold text-teal-700">{l.first_name} {l.last_name}</span>
+                          <span className="text-xs text-gray-500">{l.email || "—"}</span>
+                          <span className="flex flex-wrap gap-2 mt-1">
+                            {l.expires_at
+                              ? <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-xl text-xs font-semibold">Expire {new Date(l.expires_at).toLocaleDateString()} à {new Date(l.expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                              : <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-xl text-xs font-semibold">Illimité</span>}
+                            <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-xl text-xs font-semibold">
+                              Limite&nbsp;{l.usage_limit ?? "—"}
+                            </span>
+                            {l.country_restriction && (
+                              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-xl text-xs font-semibold">
+                                {l.country_restriction}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <CopyAccessLinkButton token={l.token} />
+                          <button
+                            className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 font-semibold shadow"
+                            onClick={() => handleDeleteLink(l.id)}
+                            title="Révoquer"
+                          >
+                            <X className="w-4 h-4" /> Révoquer
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ----------- AVANCÉ ------------ */}
+          {tab === "advanced" && (
+            <div className="space-y-8">
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
                 <input
                   type="checkbox"
-                  checked={geoRestricted}
-                  onChange={() => setGeoRestricted(!geoRestricted)}
-                  className="form-checkbox accent-blue-600 border-2 border-blue-200 h-5 w-5 rounded-md"
+                  checked={notifyOnAccess}
+                  onChange={() => setNotifyOnAccess(!notifyOnAccess)}
+                  className="h-5 w-5 accent-teal-600 border-2 border-teal-100 rounded-md"
                 />
-                Restreindre géographiquement
+                Notifier l’admin à chaque consultation d’un document
               </label>
-              {geoRestricted && (
-                <select
-                  className="block w-full mb-2 px-3 py-2 border rounded-xl bg-gray-50"
-                  value={selectedCountry || ""}
-                  onChange={e => setSelectedCountry(e.target.value)}
-                >
-                  <option value="">-- Choisir un pays --</option>
-                  {countryOptions.map((country: { label: string; value: string }) => (
-                    <option key={country.value} value={country.label}>{country.label}</option>
-                  ))}
-                </select>
-              )}
-
-              <button
-                onClick={handleCreateLink}
-                disabled={creating}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-blue-600 hover:to-blue-800 active:scale-95 transition mt-4"
-              >{creating ? "Création..." : "Générer un accès invité"}</button>
-              {error && <div className="text-red-500 mt-3 text-base font-semibold">{error}</div>}
-            </div>
-
-            <hr className="my-5 border-t-2 border-dashed border-gray-200" />
-
-            <h4 className="font-bold mb-3 text-teal-700 text-lg">Liens existants</h4>
-            <ul className="space-y-3">
-              {links.map((l) => (
-                <li key={l.id} className="flex items-center justify-between text-base border-b pb-2 gap-4">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-semibold text-teal-700">{l.first_name} {l.last_name}</span>
-                    <span className="text-xs text-gray-600">{l.email || "—"}</span>
-                    <span className="text-xs text-gray-500">
-                      {l.expires_at
-                        ? <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-xl">Expire {new Date(l.expires_at).toLocaleDateString()} à {new Date(l.expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                        : <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-xl">Illimité</span>}
-                      <span className="ml-2 bg-violet-100 text-violet-700 px-2 py-0.5 rounded-xl">
-                        Limite&nbsp;{l.usage_limit ?? "—"}
-                      </span>
-                      {l.country_restriction && (
-                        <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-xl">
-                          {l.country_restriction}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <CopyAccessLinkButton token={l.token} />
-                    <button
-                      className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 font-semibold shadow"
-                      onClick={() => handleDeleteLink(l.id)}
-                      title="Révoquer"
-                    >
-                      <X className="w-4 h-4" /> Révoquer
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* AVANCÉ */}
-        {tab === "advanced" && (
-          <div className="space-y-6">
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                checked={notifyOnAccess}
-                onChange={() => setNotifyOnAccess(!notifyOnAccess)}
-                className="mr-2"
-              />
-              Notifier l’admin à chaque consultation d’un document
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                checked={downloadDisabled}
-                onChange={() => setDownloadDisabled(!downloadDisabled)}
-                className="mr-2"
-              />
-              Désactiver le téléchargement des documents (lecture seule)
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                checked={watermarkEnabled}
-                onChange={() => setWatermarkEnabled(!watermarkEnabled)}
-                className="mr-2"
-              />
-              Filigrane personnalisé sur tous les documents consultés
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                checked={requireConsent}
-                onChange={() => setRequireConsent(!requireConsent)}
-                className="mr-2"
-              />
-              Consentement obligatoire (CGU/RGPD) à chaque accès
-            </label>
-
-            <div>
-              <label className="block font-bold mb-1">Limiter l’accès à certains domaines email (optionnel)</label>
-              <input
-                type="text"
-                className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
-                value={allowedDomains}
-                onChange={e => setAllowedDomains(e.target.value)}
-                placeholder="Exemple : moncabinet.fr, societe.com"
-              />
-              <div className="text-xs text-gray-500">
-                Séparer les domaines par une virgule. Laisser vide pour aucune restriction.
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+                <input
+                  type="checkbox"
+                  checked={downloadDisabled}
+                  onChange={() => setDownloadDisabled(!downloadDisabled)}
+                  className="h-5 w-5 accent-teal-600 border-2 border-teal-100 rounded-md"
+                />
+                Désactiver le téléchargement des documents (lecture seule)
+              </label>
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+                <input
+                  type="checkbox"
+                  checked={watermarkEnabled}
+                  onChange={() => setWatermarkEnabled(!watermarkEnabled)}
+                  className="h-5 w-5 accent-teal-600 border-2 border-teal-100 rounded-md"
+                />
+                Filigrane personnalisé sur tous les documents consultés
+              </label>
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+                <input
+                  type="checkbox"
+                  checked={requireConsent}
+                  onChange={() => setRequireConsent(!requireConsent)}
+                  className="h-5 w-5 accent-teal-600 border-2 border-teal-100 rounded-md"
+                />
+                Consentement obligatoire (CGU/RGPD) à chaque accès
+              </label>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Limiter l’accès à certains domaines email (optionnel)
+                </label>
+                <input
+                  type="text"
+                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  value={allowedDomains}
+                  onChange={e => setAllowedDomains(e.target.value)}
+                  placeholder="Exemple : moncabinet.fr, societe.com"
+                />
+                <div className="text-xs text-gray-500 ml-1">
+                  Séparer les domaines par une virgule. Laisser vide pour aucune restriction.
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold mb-2 text-teal-800 text-base">
+                  Limiter le nombre d’utilisateurs simultanés
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  value={maxConcurrentUsers}
+                  onChange={e => setMaxConcurrentUsers(Number(e.target.value))}
+                />
+                <div className="text-xs text-gray-500 ml-1">
+                  (Optionnel) – Par défaut : 5 utilisateurs. Maximum : 50.
+                </div>
               </div>
             </div>
-
-            <div>
-              <label className="block font-bold mb-1">Limiter le nombre d’utilisateurs simultanés</label>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
-                value={maxConcurrentUsers}
-                onChange={e => setMaxConcurrentUsers(Number(e.target.value))}
-              />
-              <div className="text-xs text-gray-500">
-                (Optionnel) – Par défaut : 5 utilisateurs. Maximum : 50.
-              </div>
-            </div>
-          </div>
-        )}
-
+          )}
+        </div>
       </div>
     </div>
   );
@@ -599,7 +634,7 @@ const CopyAccessLinkButton: React.FC<{ token: string }> = ({ token }) => {
           type="text"
           value={url}
           readOnly
-          className="text-xs px-2 py-1 border rounded-xl bg-gray-50"
+          className="text-xs px-2 py-1 border rounded-xl bg-gray-50 font-sans"
           style={{ width: "190px" }}
           onFocus={e => e.target.select()}
         />
@@ -615,7 +650,7 @@ const CopyAccessLinkButton: React.FC<{ token: string }> = ({ token }) => {
 
   return (
     <button
-      className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold shadow"
+      className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold shadow font-sans transition"
       onClick={handleCopy}
       title="Copier le lien"
     >

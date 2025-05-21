@@ -1,4 +1,6 @@
 import React from 'react';
+import { FolderOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface DataRoomListProps {
   datarooms: any[];
@@ -7,6 +9,8 @@ interface DataRoomListProps {
 }
 
 const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGenerateLink }) => {
+  const navigate = useNavigate();
+
   return (
     <ul className="space-y-4">
       {datarooms.map((room: any) => (
@@ -40,6 +44,14 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
                 <path d="M6 8h8m-8 0v6a2 2 0 002 2h4a2 2 0 002-2V8m-8 0V6a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span>Supprimer</span>
+            </button>
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold bg-teal-50 text-teal-700 border border-teal-200 shadow-sm hover:bg-teal-600 hover:text-white focus:ring-2 focus:ring-teal-500 transition-all duration-150"
+              onClick={() => navigate(`/dataroom/${room.id}`)}
+              title="Ouvrir la Data Room"
+            >
+              <FolderOpen className="w-4 h-4 mr-1" />
+              Ouvrir
             </button>
           </div>
         </li>

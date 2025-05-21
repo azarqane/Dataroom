@@ -13,10 +13,11 @@ import { ScrollToTop } from './components/ScrollToTop';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import { Toaster } from 'react-hot-toast';
+import DataRoomPage from './pages/DataRoomPage';
 
 function AppWrapper() {
   const location = useLocation();
-  const isDashboard = location.pathname.startsWith('/dashboard');
+  const isLanding = location.pathname === '/';
 
   useEffect(() => {
     if (location.pathname === '/' && location.hash) {
@@ -30,19 +31,10 @@ function AppWrapper() {
     }
   }, [location]);
 
-  if (isDashboard) {
-    return (
-      <>
-        <DashboardPage />
-        <Toaster position="top-right" />
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <Helmet />
-      <Navbar />
+      {isLanding && <Navbar />}
       <Routes>
         <Route path="/" element={
           <main>
@@ -55,10 +47,29 @@ function AppWrapper() {
           </main>
         } />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dataroom/:id" element={<DataRoomPage />} />
       </Routes>
-      <Footer />
+      {isLanding && <Footer />}
       <ScrollToTop />
-      <Toaster position="top-right" />
+      <Toaster
+  position="top-center"  // ou "bottom-center", "top-left", etc.
+  toastOptions={{
+    duration: 4000,
+    style: {
+      fontSize: '1.1rem',
+      fontWeight: 'bold',
+      background: '#14b8a6',
+      color: '#fff',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 32px 0 rgb(0 0 0 / 10%)',
+    },
+    iconTheme: {
+      primary: "#fff",
+      secondary: "#14b8a6"
+    }
+  }}
+/>
     </div>
   );
 }

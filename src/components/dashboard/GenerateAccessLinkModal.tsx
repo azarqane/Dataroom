@@ -66,7 +66,8 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
   };
 
   const handleCopy = async () => {
-    if (link) {
+  if (link) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(link);
         setCopied(true);
@@ -75,8 +76,19 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
         setCopied(false);
         alert("Erreur lors de la copie dans le presse-papier.");
       }
+    } else {
+      // Fallback : sélection du texte, demande de faire Ctrl+C
+      const input = document.getElementById('access-link-input') as HTMLInputElement | null;
+      if (input) {
+        input.select();
+        input.setSelectionRange(0, 99999);
+        alert("Votre navigateur ne supporte pas la copie automatique. Sélectionnez le lien et faites Ctrl+C pour copier.");
+      }
     }
-  };
+  }
+};
+
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -152,11 +164,13 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <input
-                type="text"
-                className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm bg-white"
-                value={link}
-                readOnly
-              />
+  id="access-link-input"
+  type="text"
+  className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm bg-white"
+  value={link}
+  readOnly
+/>
+
               <button
                 onClick={handleCopy}
                 className={`px-3 py-1 ${copied ? 'bg-green-600' : 'bg-teal-600'} text-white rounded hover:bg-teal-700 text-sm transition`}

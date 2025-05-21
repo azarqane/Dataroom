@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 const DataRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [room, setRoom] = useState<any>(null);
@@ -14,74 +15,14 @@ const DataRoomPage: React.FC = () => {
   const [links, setLinks] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Drag & drop state
   const [dragActive, setDragActive] = useState(false);
-  const dropRef = useRef<HTMLDivElement>(null);
 
-  // Demo description
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Description
   const fakeDescription = "Partagez et protégez vos documents sensibles. Générer des accès sécurisés à la demande.";
-  // ---- AJOUTER ICI LES FONCTIONS POUR L’UPLOAD ----
-const handleUpload = async (file: File) => {
-  if (!room) return;
-  setUploading(true);
-  try {
-    // Upload vers Supabase Storage
-    const storagePath = `${room.id}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase
-      .storage
-      .from('dataroom-files')
-      .upload(storagePath, file);
 
-    if (uploadError) throw uploadError;
-
-    // Ajout dans la table files
-    const { error: dbError } = await supabase
-      .from('files')
-      .insert({
-        dataroom_id: room.id,
-        name: file.name,
-        url: storagePath,
-        uploaded_at: new Date().toISOString(),
-      });
-
-    if (dbError) throw dbError;
-
-    toast.success("Fichier uploadé avec succès !");
-
-    // Rafraîchir la liste des fichiers (SELECT)
-    const { data: filesData, error: selectError } = await supabase
-      .from("files")
-      .select("*")
-      .eq("dataroom_id", room.id)
-      .order("uploaded_at", { ascending: false });
-
-    if (selectError) {
-      toast.error("Erreur lors du rafraîchissement des fichiers");
-    }
-    setFiles(filesData || []);
-    // Debug console
-    console.log("Fichiers actuels :", filesData);
-  } catch (err: any) {
-    toast.error("Erreur lors de l’upload : " + (err?.message || err));
-  }
-  setUploading(false);
-};
-
-
-const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    await handleUpload(file);
-    e.target.value = '';
-  }
-};
-
-const handleZoneClick = () => {
-  if (!uploading) fileInputRef.current?.click();
-};
-
+  // Chargement Data Room, fichiers, liens, logs
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
@@ -127,24 +68,70 @@ const handleZoneClick = () => {
 
   // Drag & Drop handlers
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.type === "dragenter" || e.type === "dragover") {
-    setDragActive(true);
-  } else if (e.type === "dragleave") {
-    setDragActive(false);
-  }
-};
-
-
-
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(false);
-    // Pour la démo, on ne fait rien, mais ici tu traiteras e.dataTransfer.files
-    alert("Upload à venir !");
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  // Gestion de l'upload
+  const handleUpload = async (file: File) => {
+    if (!room) return;
+    setUploading(true);
+    try {
+      const storagePath = `${room.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase
+        .storage
+        .from('dataroom-files')
+        .upload(storagePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase
+        .from('files')
+        .insert({
+          dataroom_id: room.id,
+          name: file.name,
+          url: storagePath,
+          uploaded_at: new Date().toISOString(),
+        });
+
+      if (dbError) throw dbError;
+
+      toast.success("Fichier uploadé avec succès !");
+
+      // Rafraîchir la liste
+      const { data: filesData, error: selectError } = await supabase
+        .from("files")
+        .select("*")
+        .eq("dataroom_id", room.id)
+        .order("uploaded_at", { ascending: false });
+
+      if (selectError) {
+        toast.error("Erreur lors du rafraîchissement des fichiers");
+      }
+      setFiles(filesData || []);
+    } catch (err: any) {
+      toast.error("Erreur lors de l’upload : " + (err?.message || err));
+    }
+    setUploading(false);
+  };
+
+  // Sélection fichier depuis le bouton ou input
+  const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleUpload(file);
+      e.target.value = '';
+    }
+  };
+
+  // Drag & Drop
+  const handleZoneClick = () => {
+    if (!uploading) fileInputRef.current?.click();
   };
 
   if (loading)
@@ -194,60 +181,55 @@ const handleZoneClick = () => {
           </button>
         </div>
 
-        {/* DESCRIPTION / MESSAGE */}
+        {/* DESCRIPTION */}
         <div className="bg-teal-50 border-l-4 border-teal-400 px-4 py-2 rounded text-teal-800 flex items-center gap-2">
           <Info className="w-5 h-5 text-teal-500" />
-          <span>
-            {fakeDescription}
-          </span>
+          <span>{fakeDescription}</span>
         </div>
 
         {/* ZONE DRAG & DROP */}
         <div
-  ref={dropRef}
-  className={`w-full flex flex-col items-center justify-center border-2 rounded-2xl border-dashed p-8 transition-all duration-200 bg-white text-center
-    ${dragActive ? "border-teal-600 bg-teal-50" : "border-teal-200 bg-white"}
-    ${uploading ? "opacity-50 pointer-events-none" : ""}
-  `}
-  onDragEnter={handleDrag}
-  onDragOver={handleDrag}
-  onDragLeave={handleDrag}
-  onDrop={async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      await handleUpload(files[0]);
-    }
-  }}
-  onClick={handleZoneClick}
-  style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
->
-  <input
-    type="file"
-    ref={fileInputRef}
-    className="hidden"
-    onChange={handleSelectFile}
-    disabled={uploading}
-  />
-  <UploadCloud className={`w-12 h-12 mx-auto mb-2 ${dragActive ? "text-teal-700" : "text-teal-300"}`} />
-  <div className="text-lg font-semibold text-teal-700 mb-1">
-    {uploading ? "Téléversement en cours..." : "Glissez-déposez vos fichiers ici"}
-  </div>
-  <div className="text-gray-400 text-sm mb-2">
-    ou cliquez pour sélectionner un fichier
-  </div>
-  <button
-    className="px-5 py-2 rounded-xl bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition"
-    onClick={e => { e.stopPropagation(); handleZoneClick(); }}
-    disabled={uploading}
-  >
-    Sélectionner un fichier
-  </button>
-</div>
-
-
+          className={`w-full flex flex-col items-center justify-center border-2 rounded-2xl border-dashed p-8 transition-all duration-200 bg-white text-center
+            ${dragActive ? "border-teal-600 bg-teal-50" : "border-teal-200 bg-white"}
+            ${uploading ? "opacity-50 pointer-events-none" : ""}
+          `}
+          onDragEnter={handleDrag}
+          onDragOver={handleDrag}
+          onDragLeave={handleDrag}
+          onDrop={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragActive(false);
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+              await handleUpload(files[0]);
+            }
+          }}
+          onClick={handleZoneClick}
+          style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleSelectFile}
+            disabled={uploading}
+          />
+          <UploadCloud className={`w-12 h-12 mx-auto mb-2 ${dragActive ? "text-teal-700" : "text-teal-300"}`} />
+          <div className="text-lg font-semibold text-teal-700 mb-1">
+            {uploading ? "Téléversement en cours..." : "Glissez-déposez vos fichiers ici"}
+          </div>
+          <div className="text-gray-400 text-sm mb-2">
+            ou cliquez pour sélectionner un fichier
+          </div>
+          <button
+            className="px-5 py-2 rounded-xl bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition"
+            onClick={e => { e.stopPropagation(); handleZoneClick(); }}
+            disabled={uploading}
+          >
+            Sélectionner un fichier
+          </button>
+        </div>
 
         {/* FICHIERS */}
         <div>

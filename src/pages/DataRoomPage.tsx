@@ -21,6 +21,13 @@ const DataRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  // Etats pour la modale de prévisualisation
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<
+    "pdf" | "image" | "audio" | "video" | "other" | null
+  >(null);
+  const [previewFileName, setPreviewFileName] = useState<string>("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [room, setRoom] = useState<any>(null);
@@ -36,7 +43,6 @@ const DataRoomPage: React.FC = () => {
   const fakeDescription =
     "Partagez et protégez vos documents sensibles. Générer des accès sécurisés à la demande.";
 
-  // Récupération utilisateur
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -45,7 +51,6 @@ const DataRoomPage: React.FC = () => {
     fetchUser();
   }, []);
 
-  // Chargement des données
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
@@ -93,11 +98,10 @@ const DataRoomPage: React.FC = () => {
     if (id) fetchRoom();
   }, [id]);
 
-  // Nettoyage nom fichier pour stockage
   const cleanFileName = (filename: string) =>
     filename.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9._-]/g, "");
 
-  // Suppression fichier (storage + base)
+  // Suppression fichier
   const handleDeleteFile = async (file: any) => {
     if (!room) return;
 
@@ -132,6 +136,34 @@ const DataRoomPage: React.FC = () => {
       toast.error(`Erreur lors de la suppression : ${err.message || err}`);
     } finally {
       setUploading(false);
+    }
+  };
+
+  // Prévisualisation fichier
+  const handlePreview = async (file: any) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("dataroom-files")
+        .createSignedUrl(file.url, 300); // URL valide 5 minutes
+
+      if (error || !data?.signedUrl) {
+        toast.error("Erreur lors de la récupération du fichier");
+        return;
+      }
+
+      const ext = file.url.split(".").pop()?.toLowerCase();
+
+      if (ext === "pdf") setPreviewType("pdf");
+      else if (["jpg", "jpeg", "png", "gif", "svg"].includes(ext || ""))
+        setPreviewType("image");
+      else if (["mp3", "wav"].includes(ext || "")) setPreviewType("audio");
+      else if (["mp4", "webm", "ogg"].includes(ext || "")) setPreviewType("video");
+      else setPreviewType("other");
+
+      setPreviewUrl(data.signedUrl);
+      setPreviewFileName(file.name);
+    } catch (e) {
+      toast.error("Erreur inconnue lors de la prévisualisation");
     }
   };
 
@@ -244,8 +276,8 @@ const DataRoomPage: React.FC = () => {
               <div className="text-2xl font-extrabold text-teal-800">{room.name}</div>
               <div className="text-xs text-gray-400">
                 Créée le {new Date(room.created_at).toLocaleDateString()} &middot;{" "}
-                {files.length} fichier{files.length > 1 ? "s" : ""} &middot; {links.length} accès généré
-                {links.length > 1 ? "s" : ""}
+                {files.length} fichier{files.length > 1 ? "s" : ""} &middot; {links.length} accès
+                généré{links.length > 1 ? "s" : ""}
               </div>
             </div>
           </div>
@@ -345,12 +377,13 @@ const DataRoomPage: React.FC = () => {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => handlePreview(file)}
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-gray-200 text-teal-700 hover:bg-teal-200 font-semibold"
-                      onClick={() => alert("Prévisualisation à venir")}
                       title="Prévisualiser"
                     >
                       <Eye className="w-4 h-4" /> Voir
                     </button>
+
                     <button
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200 font-semibold"
                       onClick={() => handleDeleteFile(file)}
@@ -435,9 +468,85 @@ const DataRoomPage: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="text-xs text-gray-400 mt-8">
-        Page Data Room – propriétaire · Sécurité et partage sans téléchargement.
-      </div>
+
+      {/* MODALE DE PREVISUALISATION */}
+      {previewUrl && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+          onClick={() => setPreviewUrl(null)} // clic hors modal ferme
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-auto relative shadow-lg"
+            onClick={(e) => e.stopPropagation()} // empêche fermeture si clic dans modal
+          >
+           <button
+              onClick={() => setPreviewUrl(null)}
+              className="absolute top-3 right-3 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-teal-700 transition"
+              title="Fermer"
+            >
+              Fermer
+            </button>
+
+
+
+
+            {/* Titre fichier */}
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">{previewFileName}</h3>
+
+            {previewType === "pdf" && (
+              <embed
+                src={previewUrl}
+                type="application/pdf"
+                width="100%"
+                height="600px"
+                className="rounded-md shadow-md"
+              />
+            )}
+
+            {previewType === "image" && (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="max-w-full max-h-[70vh] rounded-md shadow-md"
+              />
+            )}
+
+            {previewType === "audio" && (
+              <div className="flex flex-col items-center gap-4 max-w-full">
+                <audio controls className="w-full max-w-xl rounded-lg shadow-lg">
+                  <source src={previewUrl} />
+                  Votre navigateur ne supporte pas la lecture audio.
+                </audio>
+              </div>
+            )}
+
+            {previewType === "video" && (
+              <video
+                controls
+                className="max-w-full max-h-[70vh] rounded-md shadow-md"
+                src={previewUrl}
+              >
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+            )}
+
+            {previewType === "other" && (
+              <div className="text-center">
+                <p className="mb-4">Prévisualisation non disponible pour ce type de fichier.</p>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  Télécharger
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* FIN MODALE */}
     </div>
   );
 };

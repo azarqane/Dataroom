@@ -4,18 +4,19 @@ import { v4 as uuidv4 } from "uuid";
 import { ClipboardCopy, X, Trash2, Info } from "lucide-react";
 import { toast } from "react-hot-toast";
 import countryList from 'react-select-country-list';
+
 type ThumbBubbleProps = {
   value: number | string;
   unit?: string;
   style?: React.CSSProperties;
 };
-// Pour la bulle d’info curseur
 const ThumbBubble: React.FC<ThumbBubbleProps> = ({ value, unit = '', style = {} }) => (
   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white/90 border border-gray-200 shadow-md rounded-xl px-3 py-1 text-xs font-bold text-teal-600 pointer-events-none select-none transition"
-       style={style}>
+    style={style}>
     {value}{unit}
   </div>
 );
+
 type AccessLink = {
   id: string;
   email: string | null;
@@ -34,28 +35,39 @@ type Props = {
 };
 
 const TABS = [
-  { key: "general", label: "Paramètres Data Room" },
-  { key: "share", label: "Paramètres de partage" },
+  { key: "general", label: "Data Room" },
+  { key: "share", label: "Partage" },
+  { key: "advanced", label: "Avancé" },
 ];
 
 const countryOptions = countryList().getData();
 
 const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
-const [tab, setTab] = useState<"general" | "share">(
-  () => (typeof window !== "undefined" && sessionStorage.getItem("settingsTab") as "general" | "share") || "general"
-);
-
-function switchTab(newTab: "general" | "share") {
-  setTab(newTab);
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("settingsTab", newTab);
+  const [tab, setTab] = useState<"general" | "share" | "advanced">(
+    () => (typeof window !== "undefined" && sessionStorage.getItem("settingsTab") as "general" | "share" | "advanced") || "general"
+  );
+  function switchTab(newTab: "general" | "share" | "advanced") {
+    setTab(newTab);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("settingsTab", newTab);
+    }
   }
-}
- // Général
+
+  // Data Room (standard)
   const [roomName, setRoomName] = useState(room.name);
   const [description, setDescription] = useState(room.description || "");
   const [validity, setValidity] = useState<number>(room.valid_until ? getRemainingDays(room.valid_until) : 30);
+  const [password, setPassword] = useState(""); // Protection par mot de passe
+  const [welcomeMsg, setWelcomeMsg] = useState(""); // Message d'accueil
   const [isSaving, setIsSaving] = useState(false);
+
+  // Avancé
+  const [notifyOnAccess, setNotifyOnAccess] = useState(false);
+  const [downloadDisabled, setDownloadDisabled] = useState(false);
+  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
+  const [requireConsent, setRequireConsent] = useState(false);
+  const [allowedDomains, setAllowedDomains] = useState<string>("");
+  const [maxConcurrentUsers, setMaxConcurrentUsers] = useState<number>(5);
 
   // Partage
   const [email, setEmail] = useState("");
@@ -68,12 +80,10 @@ function switchTab(newTab: "general" | "share") {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [links, setLinks] = useState<AccessLink[]>([]);
   const [error, setError] = useState("");
-  // Pour la bulle d’info curseur
   const [showValidityBubble, setShowValidityBubble] = useState(false);
   const [showUsageBubble, setShowUsageBubble] = useState(false);
   const [showExpireBubble, setShowExpireBubble] = useState(false);
 
-  // Initialisation (liens existants)
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -85,7 +95,6 @@ function switchTab(newTab: "general" | "share") {
     })();
   }, [room]);
 
-  // Helpers
   function getRemainingDays(validUntil: string) {
     const until = new Date(validUntil).getTime();
     const now = Date.now();
@@ -102,9 +111,10 @@ function switchTab(newTab: "general" | "share") {
     return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
-  // -- Save DataRoom general settings
+  // Save Data Room general settings
   async function handleSaveGeneral() {
     setIsSaving(true);
+    // On stockera plus tard le mot de passe, le message, etc. côté backend !
     const validUntil = addDays(new Date(), validity);
     const { error } = await supabase
       .from("datarooms")
@@ -112,6 +122,7 @@ function switchTab(newTab: "general" | "share") {
         name: roomName,
         description,
         valid_until: validUntil.toISOString(),
+        // password, welcomeMsg, etc. seront ajoutés plus tard au backend
       })
       .eq("id", room.id);
     setIsSaving(false);
@@ -123,7 +134,7 @@ function switchTab(newTab: "general" | "share") {
     }
   }
 
-  // -- Suppression data room
+  // Suppression data room
   async function handleDeleteRoom() {
     if (!window.confirm("Suppression définitive de la Data Room ?")) return;
     const { error } = await supabase.from("datarooms").delete().eq("id", room.id);
@@ -136,11 +147,10 @@ function switchTab(newTab: "general" | "share") {
     }
   }
 
-  // -- Création lien d'accès avec paramètres avancés
+  // Création lien d'accès avec paramètres avancés
   async function handleCreateLink() {
     setCreating(true);
     setError("");
-
     if (!firstName.trim() || !lastName.trim()) {
       setError("Le nom et prénom de l'invité sont obligatoires.");
       setCreating(false);
@@ -162,7 +172,6 @@ function switchTab(newTab: "general" | "share") {
       setCreating(false);
       return;
     }
-
     const token = uuidv4();
     const expires_at = addDays(new Date(), expiresDays).toISOString();
     const { error } = await supabase
@@ -187,14 +196,12 @@ function switchTab(newTab: "general" | "share") {
       setGeoRestricted(false);
       setSelectedCountry(null);
       toast.success("Lien généré !");
-      // Reload links (reste sur l’onglet actuel)
       const { data } = await supabase
         .from("access_links")
         .select("*")
         .eq("dataroom_id", room.id)
         .order("created_at", { ascending: false });
       setLinks((data ?? []) as AccessLink[]);
-      // Surtout NE PAS changer de tab ici !
       afterChange?.();
     }
     setCreating(false);
@@ -221,24 +228,24 @@ function switchTab(newTab: "general" | "share") {
           className="absolute top-4 right-4 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-xl hover:bg-teal-700 active:scale-95 transition"
         >Fermer</button>
 
+        <h2 className="text-2xl font-extrabold text-teal-700 mb-7 text-center">Paramètres</h2>
+
         <div className="flex border-b-2 mb-7 gap-1">
           {TABS.map(t => (
-  <button
-    key={t.key}
-    className={`py-2 px-6 font-bold text-lg border-b-4 rounded-t-xl bg-white/90 transition-all duration-200
-      ${tab === t.key
-        ? "border-teal-600 text-teal-800 shadow"
-        : "border-transparent text-gray-500 hover:text-teal-500 hover:bg-teal-100/30"}`}
-    onClick={() => switchTab(t.key as "general" | "share")}
-  >
-    {t.label}
-  </button>
-))}
-
-
+            <button
+              key={t.key}
+              className={`py-2 px-6 font-bold text-lg border-b-4 rounded-t-xl bg-white/90 transition-all duration-200
+                ${tab === t.key
+                  ? "border-teal-600 text-teal-800 shadow"
+                  : "border-transparent text-gray-500 hover:text-teal-500 hover:bg-teal-100/30"}`}
+              onClick={() => switchTab(t.key as "general" | "share" | "advanced")}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* PARAMÈTRES DATA ROOM */}
+        {/* DATA ROOM */}
         {tab === "general" && (
           <div className="space-y-4">
             <label className="block font-bold mb-1">Nom</label>
@@ -259,9 +266,9 @@ function switchTab(newTab: "general" | "share") {
             <div>
               <label className="block font-bold mb-1 flex items-center gap-2">
                 Validité de la data room
-<span title="Ta description tooltip" className="inline-flex">
-  <Info className="w-4 h-4 text-teal-500" />
-</span>
+                <span title="Nombre de jours avant expiration automatique de la room" className="inline-flex">
+                  <Info className="w-4 h-4 text-teal-500" />
+                </span>
               </label>
               <div className="flex items-center gap-3 relative group mb-2">
                 <div className="relative w-full">
@@ -290,6 +297,24 @@ function switchTab(newTab: "general" | "share") {
               </div>
             </div>
 
+            <label className="block font-bold mb-1">Mot de passe d’accès (optionnel)</label>
+            <input
+              type="password"
+              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Définir un mot de passe pour accéder à la room"
+            />
+
+            <label className="block font-bold mb-1">Message d’accueil personnalisé</label>
+            <input
+              type="text"
+              className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+              value={welcomeMsg}
+              onChange={e => setWelcomeMsg(e.target.value)}
+              placeholder="Message affiché à l’ouverture de la room"
+            />
+
             <div className="flex justify-between gap-3 pt-4">
               <button
                 onClick={handleSaveGeneral}
@@ -304,7 +329,7 @@ function switchTab(newTab: "general" | "share") {
           </div>
         )}
 
-        {/* PARAMÈTRES PARTAGE */}
+        {/* PARTAGE */}
         {tab === "share" && (
           <div className="space-y-8">
             <div>
@@ -347,9 +372,9 @@ function switchTab(newTab: "general" | "share") {
 
               <label className="flex items-center gap-2 mb-1">
                 Validité du lien d'accès&nbsp;
-<span title="Ta description tooltip" className="inline-flex">
-  <Info className="w-4 h-4 text-teal-500" />
-</span>
+                <span title="Durée de validité du lien" className="inline-flex">
+                  <Info className="w-4 h-4 text-teal-500" />
+                </span>
                 <span className="font-bold text-teal-700 ml-2">{expiresDays} jours</span>
               </label>
               <div className="flex items-center gap-3 relative group mb-2">
@@ -468,12 +493,86 @@ function switchTab(newTab: "general" | "share") {
             </ul>
           </div>
         )}
+
+        {/* AVANCÉ */}
+        {tab === "advanced" && (
+          <div className="space-y-6">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={notifyOnAccess}
+                onChange={() => setNotifyOnAccess(!notifyOnAccess)}
+                className="mr-2"
+              />
+              Notifier l’admin à chaque consultation d’un document
+            </label>
+
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={downloadDisabled}
+                onChange={() => setDownloadDisabled(!downloadDisabled)}
+                className="mr-2"
+              />
+              Désactiver le téléchargement des documents (lecture seule)
+            </label>
+
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={watermarkEnabled}
+                onChange={() => setWatermarkEnabled(!watermarkEnabled)}
+                className="mr-2"
+              />
+              Filigrane personnalisé sur tous les documents consultés
+            </label>
+
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={requireConsent}
+                onChange={() => setRequireConsent(!requireConsent)}
+                className="mr-2"
+              />
+              Consentement obligatoire (CGU/RGPD) à chaque accès
+            </label>
+
+            <div>
+              <label className="block font-bold mb-1">Limiter l’accès à certains domaines email (optionnel)</label>
+              <input
+                type="text"
+                className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                value={allowedDomains}
+                onChange={e => setAllowedDomains(e.target.value)}
+                placeholder="Exemple : moncabinet.fr, societe.com"
+              />
+              <div className="text-xs text-gray-500">
+                Séparer les domaines par une virgule. Laisser vide pour aucune restriction.
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold mb-1">Limiter le nombre d’utilisateurs simultanés</label>
+              <input
+                type="number"
+                min={1}
+                max={50}
+                className="block w-full mb-3 px-4 py-3 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                value={maxConcurrentUsers}
+                onChange={e => setMaxConcurrentUsers(Number(e.target.value))}
+              />
+              <div className="text-xs text-gray-500">
+                (Optionnel) – Par défaut : 5 utilisateurs. Maximum : 50.
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
 };
 
-// --- Composant bouton de copie (inchangé, mais stylisé)
 const CopyAccessLinkButton: React.FC<{ token: string }> = ({ token }) => {
   const [showInput, setShowInput] = useState(false);
   const url = `${window.location.origin}/access/${token}`;

@@ -107,29 +107,118 @@ const [lastAccessLink, setLastAccessLink] = useState<string | null>(null);
   };
 
   // --- Suppression Data Room ---
-  const handleDeleteDataRoom = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setDeleteError(null);
-    if (!deleteModal.room) return;
-    if (confirmName.trim() !== deleteModal.room.name) {
-      setDeleteError("Le nom saisi ne correspond pas.");
-      return;
-    }
-    setDeleteLoading(true);
-    const { error } = await supabase
-      .from('datarooms')
-      .delete()
-      .eq('id', deleteModal.room.id);
+  // --- Suppression Data Room ---
+const handleDeleteDataRoom = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setDeleteError(null);
+
+  // DEBUG SESSION
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userRole = sessionData.session ? "authenticated" : "anon";
+  console.log("Rôle actuel :", userRole, sessionData.session);
+
+  if (userRole === "anon") {
+    setDeleteError("Vous n'êtes pas connecté (rôle 'anon'), suppression impossible.");
     setDeleteLoading(false);
-    if (error) {
-      setDeleteError("Erreur lors de la suppression : " + error.message);
+    return;
+  }
+
+  if (!deleteModal.room) return;
+  if (confirmName.trim() !== deleteModal.room.name) {
+    setDeleteError("Le nom saisi ne correspond pas.");
+    return;
+  }
+  setDeleteLoading(true);
+
+  try {
+    // 1. Récupère tous les fichiers de la data room
+    const { data: files, error: filesError } = await supabase
+      .from("files")
+      .select("id, url")
+      .eq("dataroom_id", deleteModal.room.id);
+    if (filesError) throw filesError;
+
+    let fileIds: string[] = [];
+    if (files && files.length > 0) {
+      fileIds = files.map((f: any) => f.id);
+
+      // 2. Supprimer les logs d'accès liés à ces fichiers
+      if (fileIds.length > 0) {
+        const { error: logsDeleteError } = await supabase
+          .from("access_logs")
+          .delete()
+          .in("file_id", fileIds);
+        if (logsDeleteError) throw logsDeleteError;
+      }
+
+      // 3. Supprimer du storage
+      const fileUrls = files.map((f: any) => f.url);
+      const { error: storageError } = await supabase
+        .storage
+        .from("dataroom-files")
+        .remove(fileUrls);
+      if (storageError) console.warn("Erreur suppression storage:", storageError);
+    }
+
+    // 4. Supprimer les fichiers de la BDD
+    const { error: filesDeleteError } = await supabase
+      .from("files")
+      .delete()
+      .eq("dataroom_id", deleteModal.room.id);
+    if (filesDeleteError) throw filesDeleteError;
+
+    // 5. Supprimer tous les liens d'accès de la BDD (DEBUG)
+    const { data: deletedLinks, error: linksDeleteError } = await supabase
+      .from("access_links")
+      .delete()
+      .eq("dataroom_id", deleteModal.room.id);
+    console.log(
+      "Suppression access_links (dataroom_id =",
+      deleteModal.room.id,
+      ") =>",
+      deletedLinks,
+      linksDeleteError
+    );
+    if (linksDeleteError) throw linksDeleteError;
+
+    // Vérifier qu'il ne reste plus de liens pour cette room
+    const { data: linksAfterDelete } = await supabase
+      .from("access_links")
+      .select("*")
+      .eq("dataroom_id", deleteModal.room.id);
+
+    if (linksAfterDelete && linksAfterDelete.length > 0) {
+      setDeleteError(
+        "Impossible de supprimer la Data Room car il reste " +
+          linksAfterDelete.length +
+          " liens d'accès (policy RLS bloquée ou mauvais filtre)."
+      );
+      setDeleteLoading(false);
       return;
     }
-    setDeleteModal({open: false, room: undefined});
-    setConfirmName('');
+
+    // 6. Enfin, supprimer la data room
+    const { error: roomError } = await supabase
+      .from("datarooms")
+      .delete()
+      .eq("id", deleteModal.room.id);
+    if (roomError) throw roomError;
+
+    setDeleteModal({ open: false, room: undefined });
+    setConfirmName("");
     setDeleteError(null);
     fetchDataRooms();
-  };
+  } catch (error: any) {
+    setDeleteError("Erreur lors de la suppression : " + (error.message || error));
+    console.error(error);
+  } finally {
+    setDeleteLoading(false);
+  }
+};
+
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -272,19 +361,29 @@ const [lastAccessLink, setLastAccessLink] = useState<string | null>(null);
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Mes Data Rooms</h2>
-              <button
-                className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 transition-all duration-150"
-                onClick={() => {
-                  setShowCreateModal(true);
-                  setNewRoomName('');
-                  setCreateError(null);
-                }}
-              >
-                <span className="inline-flex items-center justify-center rounded-full bg-teal-700/30 w-6 h-6">
-                  <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5"><path d="M10 5v10m5-5H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                </span>
-                Créer une Data Room
-              </button>
+<button
+  className="
+    relative overflow-hidden flex items-center gap-2
+    bg-gradient-to-r from-teal-500 to-teal-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md
+    hover:from-teal-600 hover:to-teal-800 focus:ring-2 focus:ring-teal-500
+    transition-all duration-150
+    before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1/2
+    before:bg-gradient-to-b before:from-white/20 before:to-transparent
+  "
+  onClick={() => {
+    setShowCreateModal(true);
+    setNewRoomName('');
+    setCreateError(null);
+  }}
+>
+  <span className="inline-flex items-center justify-center rounded-full bg-teal-700/30 w-6 h-6">
+    <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
+      <path d="M10 5v10m5-5H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </span>
+  Créer une Data Room
+</button>
+
             </div>
             {loadingDatarooms ? (
               <p>Chargement…</p>

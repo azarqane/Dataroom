@@ -25,34 +25,65 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
             </div>
           </div>
           <div className="flex items-center gap-2">
+<button
+  className="
+    relative overflow-hidden flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold
+    bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md
+    hover:from-blue-600 hover:to-blue-800
+    focus:ring-2 focus:ring-blue-500 transition-all duration-150
+    before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1/2
+    before:bg-gradient-to-b before:from-white/20 before:to-transparent
+  "
+  onClick={() => onGenerateLink(room)}
+  title="Générer un lien d'accès sécurisé"
+>
+<svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
+  <circle cx="15" cy="5" r="3" stroke="currentColor" strokeWidth="2"/>
+  <circle cx="5" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
+  <circle cx="15" cy="15" r="3" stroke="currentColor" strokeWidth="2"/>
+  <path d="M7.8 8.6l4.4-2.2M12.2 13.6l-4.4-2.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+</svg>
+
+  <span>Lien accès</span>
+</button>
+
+
             <button
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-150"
-              onClick={() => onGenerateLink(room)}
-              title="Générer un lien d'accès sécurisé"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
-                <path d="M8 12l4-4m0 0l-4-4m4 4H4m12 0a8 8 0 11-16 0 8 8 0 0116 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>Lien accès</span>
-            </button>
+  className="
+    relative overflow-hidden flex items-center gap-1 px-4 py-1.5 rounded-lg font-semibold
+    bg-gradient-to-r from-red-600 to-pink-500 text-white shadow-md
+    hover:from-red-700 hover:to-pink-600
+    focus:ring-2 focus:ring-red-500 transition-all duration-150
+    before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1/2
+    before:bg-gradient-to-b before:from-white/25 before:to-transparent
+  "
+  onClick={() => onDelete(room)}
+  title="Supprimer la data room"
+>
+<svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
+  <line x1="6" y1="6" x2="14" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  <line x1="14" y1="6" x2="6" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+</svg>
+
+  <span>Supprimer</span>
+</button>
+
             <button
-              className="flex items-center gap-1 px-4 py-1.5 rounded-lg font-semibold bg-red-50 text-red-700 border border-red-200 shadow-sm hover:bg-gradient-to-r hover:from-red-600 hover:to-pink-500 hover:text-white focus:ring-2 focus:ring-red-500 transition-all duration-150"
-              onClick={() => onDelete(room)}
-              title="Supprimer la data room"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
-                <path d="M6 8h8m-8 0v6a2 2 0 002 2h4a2 2 0 002-2V8m-8 0V6a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>Supprimer</span>
-            </button>
-            <button
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold bg-teal-50 text-teal-700 border border-teal-200 shadow-sm hover:bg-teal-600 hover:text-white focus:ring-2 focus:ring-teal-500 transition-all duration-150"
-              onClick={() => navigate(`/dataroom/${room.id}`)}
-              title="Ouvrir la Data Room"
-            >
-              <FolderOpen className="w-4 h-4 mr-1" />
-              Ouvrir
-            </button>
+  className="
+    relative overflow-hidden flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold
+    bg-gradient-to-r from-teal-500 to-teal-700 text-white shadow-md
+    hover:from-teal-600 hover:to-teal-800
+    focus:ring-2 focus:ring-teal-500 transition-all duration-150
+    before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1/2
+    before:bg-gradient-to-b before:from-white/20 before:to-transparent
+  "
+  onClick={() => navigate(`/dataroom/${room.id}`)}
+  title="Ouvrir la Data Room"
+>
+  <FolderOpen className="w-4 h-4 mr-1" />
+  Ouvrir
+</button>
+
           </div>
         </li>
       ))}

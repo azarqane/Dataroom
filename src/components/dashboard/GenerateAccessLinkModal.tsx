@@ -95,11 +95,12 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
       <div className="bg-white border-2 border-teal-100 rounded-xl shadow-2xl p-8 w-full max-w-md relative">
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+          className="absolute top-3 right-3 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-teal-700 transition"
           title="Fermer"
         >
-          ×
+          Fermer
         </button>
+
         <h3 className="text-lg font-bold mb-4 text-gray-900">
           Générer un lien d'accès sécurisé
         </h3>

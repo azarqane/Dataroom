@@ -476,9 +476,10 @@ const DataRoomPage: React.FC = () => {
           onClick={() => setPreviewUrl(null)} // clic hors modal ferme
         >
           <div
-            className="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-auto relative shadow-lg"
-            onClick={(e) => e.stopPropagation()} // empêche fermeture si clic dans modal
+            className="bg-white rounded-lg p-6 max-w-5xl w-full max-h-[90vh] min-w-[600px] min-h-[500px] overflow-auto relative"
+            onClick={e => e.stopPropagation()} // empêche fermeture si clic dans modal
           >
+
            <button
               onClick={() => setPreviewUrl(null)}
               className="absolute top-3 right-3 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-teal-700 transition"
@@ -493,42 +494,34 @@ const DataRoomPage: React.FC = () => {
             {/* Titre fichier */}
             <h3 className="text-lg font-semibold mb-4 text-gray-800">{previewFileName}</h3>
 
-            {previewType === "pdf" && (
+            {previewType === 'pdf' && (
               <embed
                 src={previewUrl}
                 type="application/pdf"
                 width="100%"
-                height="600px"
-                className="rounded-md shadow-md"
+                height="700px"  // plus haut
+                style={{ minHeight: '500px' }}
               />
             )}
 
-            {previewType === "image" && (
-              <img
-                src={previewUrl}
-                alt="Preview"
-                className="max-w-full max-h-[70vh] rounded-md shadow-md"
-              />
+            {previewType === 'image' && (
+              <img src={previewUrl} alt="Preview" className="max-w-full max-h-[80vh]" />
             )}
 
-            {previewType === "audio" && (
-              <div className="flex flex-col items-center gap-4 max-w-full">
-                <audio controls className="w-full max-w-xl rounded-lg shadow-lg">
-                  <source src={previewUrl} />
-                  Votre navigateur ne supporte pas la lecture audio.
-                </audio>
-              </div>
+            {previewType === 'audio' && (
+              <audio controls className="w-full h-16">
+                <source src={previewUrl} />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
             )}
 
-            {previewType === "video" && (
-              <video
-                controls
-                className="max-w-full max-h-[70vh] rounded-md shadow-md"
-                src={previewUrl}
-              >
+            {previewType === 'video' && (
+              <video controls className="max-w-full max-h-[80vh]" style={{ minHeight: '400px' }}>
+                <source src={previewUrl} />
                 Votre navigateur ne supporte pas la lecture vidéo.
               </video>
             )}
+
 
             {previewType === "other" && (
               <div className="text-center">

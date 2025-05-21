@@ -13,6 +13,8 @@ import {
   User2,
   Info,
   UploadCloud,
+  X,
+  ClipboardCopy,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -21,7 +23,10 @@ const DataRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Etats pour la modale de prévisualisation
+  // Modale paramètres
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Modale prévisualisation
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<
     "pdf" | "image" | "audio" | "video" | "other" | null
@@ -41,7 +46,51 @@ const DataRoomPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fakeDescription =
-    "Partagez et protégez vos documents sensibles. Générer des accès sécurisés à la demande.";
+    "Partagez et protégez vos documents sensibles. Générez des accès sécurisés à la demande.";
+
+  // Rechargement DataRoom
+  const fetchRoom = async () => {
+    setLoading(true);
+    setError(null);
+
+    const { data: r, error: err } = await supabase
+      .from("datarooms")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (err || !r) {
+      setError("Data Room introuvable.");
+      setLoading(false);
+      return;
+    }
+
+    setRoom(r);
+
+    const { data: filesData } = await supabase
+      .from("files")
+      .select("*")
+      .eq("dataroom_id", id)
+      .order("uploaded_at", { ascending: false });
+    setFiles(filesData || []);
+
+    const { data: linksData } = await supabase
+      .from("access_links")
+      .select("*")
+      .eq("dataroom_id", id)
+      .order("created_at", { ascending: false });
+    setLinks(linksData || []);
+
+    const { data: logsData } = await supabase
+      .from("access_logs")
+      .select("*")
+      .in("file_id", filesData?.map((f) => f.id) || [])
+      .order("accessed_at", { ascending: false })
+      .limit(5);
+    setLogs(logsData || []);
+
+    setLoading(false);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -52,50 +101,8 @@ const DataRoomPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchRoom = async () => {
-      setLoading(true);
-      setError(null);
-
-      const { data: r, error: err } = await supabase
-        .from("datarooms")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (err || !r) {
-        setError("Data Room introuvable.");
-        setLoading(false);
-        return;
-      }
-
-      setRoom(r);
-
-      const { data: filesData } = await supabase
-        .from("files")
-        .select("*")
-        .eq("dataroom_id", id)
-        .order("uploaded_at", { ascending: false });
-      setFiles(filesData || []);
-
-      const { data: linksData } = await supabase
-        .from("access_links")
-        .select("*")
-        .eq("dataroom_id", id)
-        .order("created_at", { ascending: false });
-      setLinks(linksData || []);
-
-      const { data: logsData } = await supabase
-        .from("access_logs")
-        .select("*")
-        .in("file_id", filesData?.map((f) => f.id) || [])
-        .order("accessed_at", { ascending: false })
-        .limit(5);
-      setLogs(logsData || []);
-
-      setLoading(false);
-    };
-
     if (id) fetchRoom();
+    // eslint-disable-next-line
   }, [id]);
 
   const cleanFileName = (filename: string) =>
@@ -282,7 +289,7 @@ const DataRoomPage: React.FC = () => {
             </div>
           </div>
           <button
-            onClick={() => alert("Paramètres à venir")}
+            onClick={() => setShowSettingsModal(true)}
             className="flex items-center gap-1 text-gray-600 hover:text-teal-700 font-medium px-2 py-1 border rounded-lg"
             title="Paramètres"
           >
@@ -388,7 +395,7 @@ const DataRoomPage: React.FC = () => {
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200 font-semibold"
                       onClick={() => handleDeleteFile(file)}
                       title="Supprimer"
-                      disabled={uploading} // optionnel, bloque pendant suppression
+                      disabled={uploading}
                     >
                       <Trash2 className="w-4 h-4" /> Supprimer
                     </button>
@@ -416,7 +423,7 @@ const DataRoomPage: React.FC = () => {
                   className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2 border border-gray-100"
                 >
                   <div className="flex flex-col">
-                    <span className="text-teal-700 text-sm">{l.email}</span>
+                    <span className="text-teal-700 text-sm">{l.email || "Lien sans email"}</span>
                     <span className="text-xs text-gray-500">
                       Expire :{" "}
                       {l.expires_at
@@ -425,17 +432,30 @@ const DataRoomPage: React.FC = () => {
                       — Usage : {l.usage_limit ?? "illimité"}
                     </span>
                   </div>
-                  <button
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold"
-                    onClick={() =>
-                      navigator.clipboard.writeText(
-                        window.location.origin + "/access/" + l.token
-                      )
-                    }
-                    title="Copier le lien"
-                  >
-                    <Link className="w-4 h-4" /> Copier
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold"
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          window.location.origin + "/access/" + l.token
+                        )
+                      }
+                      title="Copier le lien"
+                    >
+                      <ClipboardCopy className="w-4 h-4" /> Copier
+                    </button>
+                    <button
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200 font-semibold"
+                      onClick={async () => {
+                        await supabase.from("access_links").delete().eq("id", l.id);
+                        toast.success("Lien révoqué !");
+                        fetchRoom();
+                      }}
+                      title="Révoquer"
+                    >
+                      <X className="w-4 h-4" /> Révoquer
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -469,60 +489,57 @@ const DataRoomPage: React.FC = () => {
         </div>
       </div>
 
+      {/* MODALE PARAMÈTRES */}
+      {showSettingsModal && (
+        <SettingsModal
+          room={room}
+          onClose={() => setShowSettingsModal(false)}
+          afterChange={fetchRoom}
+        />
+      )}
+
       {/* MODALE DE PREVISUALISATION */}
       {previewUrl && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
-          onClick={() => setPreviewUrl(null)} // clic hors modal ferme
+          onClick={() => setPreviewUrl(null)}
         >
           <div
             className="bg-white rounded-lg p-6 max-w-5xl w-full max-h-[90vh] min-w-[600px] min-h-[500px] overflow-auto relative"
-            onClick={e => e.stopPropagation()} // empêche fermeture si clic dans modal
+            onClick={e => e.stopPropagation()}
           >
-
-           <button
+            <button
               onClick={() => setPreviewUrl(null)}
               className="absolute top-3 right-3 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-teal-700 transition"
               title="Fermer"
             >
               Fermer
             </button>
-
-
-
-
-            {/* Titre fichier */}
             <h3 className="text-lg font-semibold mb-4 text-gray-800">{previewFileName}</h3>
-
             {previewType === 'pdf' && (
               <embed
                 src={previewUrl}
                 type="application/pdf"
                 width="100%"
-                height="700px"  // plus haut
+                height="700px"
                 style={{ minHeight: '500px' }}
               />
             )}
-
             {previewType === 'image' && (
               <img src={previewUrl} alt="Preview" className="max-w-full max-h-[80vh]" />
             )}
-
             {previewType === 'audio' && (
               <audio controls className="w-full h-16">
                 <source src={previewUrl} />
                 Votre navigateur ne supporte pas la lecture audio.
               </audio>
             )}
-
             {previewType === 'video' && (
               <video controls className="max-w-full max-h-[80vh]" style={{ minHeight: '400px' }}>
                 <source src={previewUrl} />
                 Votre navigateur ne supporte pas la lecture vidéo.
               </video>
             )}
-
-
             {previewType === "other" && (
               <div className="text-center">
                 <p className="mb-4">Prévisualisation non disponible pour ce type de fichier.</p>
@@ -543,5 +560,141 @@ const DataRoomPage: React.FC = () => {
     </div>
   );
 };
+
+// ----------- MODALE PARAMÈTRES (collée ici pour un seul fichier, possible de factoriser) ----------
+function SettingsModal({ room, onClose, afterChange }: any) {
+  const [email, setEmail] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [usageLimit, setUsageLimit] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const [links, setLinks] = useState<any[]>([]);
+
+  // Charger les liens existants à l'ouverture de la modale
+  useEffect(() => {
+    (async () => {
+      const { data: linksData } = await supabase
+        .from("access_links")
+        .select("*")
+        .eq("dataroom_id", room.id)
+        .order("created_at", { ascending: false });
+      setLinks(linksData || []);
+    })();
+  }, [room]);
+
+  const handleCreateLink = async () => {
+    setCreating(true);
+    setError("");
+    // Génère un token sécurisé
+    const token = uuidv4();
+    const { error } = await supabase
+      .from("access_links")
+      .insert({
+        dataroom_id: room.id,
+        email,
+        expires_at: expiresAt ? new Date(expiresAt) : null,
+        usage_limit: usageLimit ? Number(usageLimit) : null,
+        token,
+      });
+    if (error) setError(error.message);
+    else {
+      setEmail("");
+      setExpiresAt("");
+      setUsageLimit("");
+      afterChange?.();
+      // Recharge la liste locale
+      const { data: linksData } = await supabase
+        .from("access_links")
+        .select("*")
+        .eq("dataroom_id", room.id)
+        .order("created_at", { ascending: false });
+      setLinks(linksData || []);
+    }
+    setCreating(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="relative bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 bg-teal-500 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-teal-700 transition"
+        >
+          Fermer
+        </button>
+        <h2 className="text-xl font-bold mb-4">Paramètres d’accès</h2>
+        <div className="mb-4">
+          <label className="font-medium">Ajouter un invité</label>
+          <input
+            type="email"
+            placeholder="Email invité"
+            className="block w-full mt-1 mb-2 px-3 py-2 border rounded"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <label>Date d’expiration (optionnel)</label>
+          <input
+            type="date"
+            className="block w-full mt-1 mb-2 px-3 py-2 border rounded"
+            value={expiresAt}
+            onChange={e => setExpiresAt(e.target.value)}
+          />
+          <label>Nombre d’utilisations (optionnel)</label>
+          <input
+            type="number"
+            className="block w-full mt-1 mb-4 px-3 py-2 border rounded"
+            min={1}
+            value={usageLimit}
+            onChange={e => setUsageLimit(e.target.value)}
+          />
+          <button
+            onClick={handleCreateLink}
+            disabled={creating}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 rounded-lg font-semibold shadow-md hover:from-blue-600 hover:to-blue-800 transition"
+          >
+            Générer un accès invité
+          </button>
+          {error && <div className="text-red-500 mt-2">{error}</div>}
+        </div>
+        <hr className="my-4"/>
+        <h3 className="font-bold mb-2">Liens existants</h3>
+        <ul className="space-y-2">
+          {links.map((l) => (
+            <li key={l.id} className="flex items-center justify-between text-sm border-b pb-2">
+              <div>
+                <span className="text-teal-700">{l.email || "—"}</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  {l.expires_at ? ("Expire " + new Date(l.expires_at).toLocaleDateString()) : "Jamais"}
+                </span>
+                <span className="text-xs text-gray-400 ml-2">
+                  {l.usage_limit ? ("Limite " + l.usage_limit) : "Illimité"}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="text-blue-600 hover:underline"
+                  onClick={() => navigator.clipboard.writeText(window.location.origin + "/access/" + l.token)}
+                >Copier le lien</button>
+                <button
+                  className="text-red-500 hover:underline"
+                  onClick={async () => {
+                    await supabase.from("access_links").delete().eq("id", l.id);
+                    const { data: linksData } = await supabase
+                      .from("access_links")
+                      .select("*")
+                      .eq("dataroom_id", room.id)
+                      .order("created_at", { ascending: false });
+                    setLinks(linksData || []);
+                    afterChange?.();
+                  }}
+                >Révoquer</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 export default DataRoomPage;

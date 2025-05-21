@@ -152,7 +152,7 @@ const DataRoomPage: React.FC = () => {
       {/* RETOUR */}
       <div className="w-full max-w-3xl mb-6">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/dashboard?section=datarooms')}
           className="flex items-center gap-2 text-teal-700 hover:text-teal-900 font-bold text-sm mb-2 transition"
         >
           <ArrowLeft className="w-5 h-5" />

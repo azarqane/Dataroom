@@ -20,8 +20,9 @@ const DashboardPage = () => {
   const [showLinkModal, setShowLinkModal] = useState(false);
 const [selectedRoom, setSelectedRoom] = useState<any>(null);
 const [lastAccessLink, setLastAccessLink] = useState<string | null>(null);
-
-  const [currentSection, setCurrentSection] = useState('dashboard');
+  const params = new URLSearchParams(location.search);
+  const defaultSection = params.get('section') || 'dashboard';
+  const [currentSection, setCurrentSection] = useState(defaultSection);
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 

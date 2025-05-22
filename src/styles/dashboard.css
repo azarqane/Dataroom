@@ -1,4 +1,3 @@
-```css
 /* Dashboard specific styles */
 .dashboard-card {
   @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all duration-200;
@@ -71,4 +70,3 @@
   @apply absolute block h-5 w-5 border-2 border-current border-r-transparent rounded-full animate-spin;
   content: "";
 }
-```

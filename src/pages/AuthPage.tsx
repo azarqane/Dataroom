@@ -37,19 +37,6 @@ const AuthPage = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // Retry function with exponential backoff
-  const retryOperation = async (operation: () => Promise<any>, maxRetries = 3) => {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (err) {
-        if (attempt === maxRetries) throw err;
-        // Exponential backoff: 2^attempt * 1000ms (1s, 2s, 4s)
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -69,36 +56,30 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        const { error } = await retryOperation(() => 
-          supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          })
-        );
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
         
-        if (error) setError(error.message);
-        else {
+        if (error) {
+          setError(error.message);
+        } else {
           setSuccess("Connexion réussie !");
           setTimeout(() => navigate('/dashboard'), 1200);
         }
       } else {
-        const { error } = await retryOperation(() => 
-          supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: { name: formData.name }
-            }
-          })
-        );
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: { name: formData.name }
+          }
+        });
 
         if (error) {
-          if (error.message.includes('timeout')) {
-            setError("La connexion au serveur a échoué. Veuillez réessayer dans quelques instants.");
-          } else {
-            setError(error.message);
-          }
+          setError(error.message);
         } else {
+          // Affiche le toast de confirmation
           toast.success(
             <div className="flex flex-col items-center">
               <h3 className="font-bold mb-1">Inscription réussie !</h3>
@@ -108,16 +89,18 @@ const AuthPage = () => {
               </p>
             </div>,
             {
-              duration: 4000,
+              duration: 5000,
               style: {
                 background: '#10B981',
                 color: '#fff',
                 padding: '16px',
+                borderRadius: '10px',
               },
               icon: '✉️',
             }
           );
-          
+
+          // Réinitialise le formulaire et bascule vers la page de connexion après 3 secondes
           setTimeout(() => {
             setIsLogin(true);
             setFormData({
@@ -130,7 +113,7 @@ const AuthPage = () => {
         }
       }
     } catch (err) {
-      setError("Une erreur est survenue. Veuillez réessayer plus tard.");
+      setError("Une erreur est survenue. Veuillez réessayer.");
       console.error("Auth error:", err);
     } finally {
       setLoading(false);
@@ -273,11 +256,10 @@ const AuthPage = () => {
 
             <div>
               <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-                {isLogin ? 'Se connecter' : "S'inscrire"}
+                {loading ? 'Traitement en cours...' : (isLogin ? 'Se connecter' : "S'inscrire")}
               </Button>
               {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
               {success && <p className="text-green-600 text-sm text-center mt-2">{success}</p>}
-              {loading && <p className="text-gray-500 text-sm text-center mt-2">Traitement en cours...</p>}
             </div>
           </form>
 
@@ -299,6 +281,12 @@ const AuthPage = () => {
                   setIsLogin(!isLogin);
                   setError(null);
                   setSuccess(null);
+                  setFormData({
+                    email: '',
+                    password: '',
+                    confirmPassword: '',
+                    name: ''
+                  });
                 }}
                 className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
               >

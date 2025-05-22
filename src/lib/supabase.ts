@@ -5,12 +5,13 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: localStorage,
-    storageKey: 'supabase.auth.token'
+    storageKey: 'supabase.auth.token',
+    debug: true
   },
   global: {
     headers: {
@@ -18,11 +19,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
   },
   realtime: {
-    timeout: 120000, // Increased to 120 seconds
-    retries: 5, // Increased number of retries
+    timeout: 120000,
+    retries: 5,
     backoff: {
-      maxDelay: 10000, // Maximum delay between retries (10 seconds)
-      minDelay: 1000 // Minimum delay between retries (1 second)
+      maxDelay: 10000,
+      minDelay: 1000
     }
   }
 });

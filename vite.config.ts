@@ -10,7 +10,7 @@ export default defineConfig({
     },
     hmr: {
       protocol: 'ws',
-      host: window.location.hostname
+      host: 'localhost'
     }
   }
 });

@@ -37,6 +37,19 @@ const AuthPage = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Retry function with exponential backoff
+  const retryOperation = async (operation: () => Promise<any>, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (err) {
+        if (attempt === maxRetries) throw err;
+        // Exponential backoff: 2^attempt * 1000ms (1s, 2s, 4s)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -54,60 +67,74 @@ const AuthPage = () => {
 
     setLoading(true);
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-      if (error) setError(error.message);
-      else {
-        setSuccess("Connexion réussie !");
-        setTimeout(() => navigate('/dashboard'), 1200);
-      }
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: { name: formData.name }
-        }
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        // Afficher le toast de confirmation
-        toast.success(
-          <div className="flex flex-col items-center">
-            <h3 className="font-bold mb-1">Inscription réussie !</h3>
-            <p className="text-sm text-center">
-              Un email de confirmation vous a été envoyé.<br/>
-              Veuillez vérifier votre boîte de réception.
-            </p>
-          </div>,
-          {
-            duration: 4000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-              padding: '16px',
-            },
-            icon: '✉️',
-          }
+    try {
+      if (isLogin) {
+        const { error } = await retryOperation(() => 
+          supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          })
         );
         
-        // Rediriger vers la page de connexion après 3 secondes
-        setTimeout(() => {
-          setIsLogin(true);
-          setFormData({
-            email: '',
-            password: '',
-            confirmPassword: '',
-            name: ''
-          });
-        }, 3000);
+        if (error) setError(error.message);
+        else {
+          setSuccess("Connexion réussie !");
+          setTimeout(() => navigate('/dashboard'), 1200);
+        }
+      } else {
+        const { error } = await retryOperation(() => 
+          supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+              data: { name: formData.name }
+            }
+          })
+        );
+
+        if (error) {
+          if (error.message.includes('timeout')) {
+            setError("La connexion au serveur a échoué. Veuillez réessayer dans quelques instants.");
+          } else {
+            setError(error.message);
+          }
+        } else {
+          toast.success(
+            <div className="flex flex-col items-center">
+              <h3 className="font-bold mb-1">Inscription réussie !</h3>
+              <p className="text-sm text-center">
+                Un email de confirmation vous a été envoyé.<br/>
+                Veuillez vérifier votre boîte de réception.
+              </p>
+            </div>,
+            {
+              duration: 4000,
+              style: {
+                background: '#10B981',
+                color: '#fff',
+                padding: '16px',
+              },
+              icon: '✉️',
+            }
+          );
+          
+          setTimeout(() => {
+            setIsLogin(true);
+            setFormData({
+              email: '',
+              password: '',
+              confirmPassword: '',
+              name: ''
+            });
+          }, 3000);
+        }
       }
+    } catch (err) {
+      setError("Une erreur est survenue. Veuillez réessayer plus tard.");
+      console.error("Auth error:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

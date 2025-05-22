@@ -20,9 +20,16 @@ const AuthPage = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Vérification de l'authentification au chargement
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate('/dashboard');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   // Fonction de validation email
   const validateEmail = (email: string) => {
@@ -85,10 +92,7 @@ const AuthPage = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="flex justify-center">
-  <Logo size={48} textSize="text-3xl" />
-</div>
-
+          <Logo size={48} textSize="text-3xl" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
           {isLogin ? 'Connexion à votre compte' : 'Créer un compte'}

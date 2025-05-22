@@ -20,8 +20,6 @@ const AuthPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
 
   // Vérification de l'authentification au chargement
   useEffect(() => {
@@ -39,25 +37,6 @@ const AuthPage = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // Password validation function
-  const validatePassword = (password: string) => {
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?/`~]/.test(password);
-
-    const errors = [];
-    if (!hasLowerCase) errors.push("une lettre minuscule");
-    if (!hasUpperCase) errors.push("une lettre majuscule");
-    if (!hasNumber) errors.push("un chiffre");
-    if (!hasSpecialChar) errors.push("un caractère spécial");
-
-    return {
-      isValid: hasLowerCase && hasUpperCase && hasNumber && hasSpecialChar,
-      errors
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -68,52 +47,39 @@ const AuthPage = () => {
       return;
     }
 
-    if (!isLogin) {
-      const passwordValidation = validatePassword(formData.password);
-      if (!passwordValidation.isValid) {
-        setError(`Le mot de passe doit contenir au moins ${passwordValidation.errors.join(', ')}`);
-        return;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        setError("Les mots de passe ne correspondent pas");
-        return;
-      }
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas");
+      return;
     }
 
     setLoading(true);
 
-    const attemptAuth = async () => {
-      try {
-        if (isLogin) {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-          
-          if (error) {
-            if (error.message === 'Invalid login credentials') {
-              throw new Error('Email ou mot de passe incorrect');
-            }
-            throw error;
-          }
-          
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (error) {
+          setError(error.message);
+        } else {
           setSuccess("Connexion réussie !");
           setTimeout(() => navigate('/dashboard'), 1200);
-        } else {
-          const { error } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: { name: formData.name },
-              emailRedirectTo: `${window.location.origin}/auth/callback`
-            }
-          });
-
-          if (error) {
-            throw error;
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: { name: formData.name }
           }
+        });
 
+        if (error) {
+          setError(error.message);
+        } else {
+          // Affiche le toast de confirmation
           toast.success(
             <div className="flex flex-col items-center">
               <h3 className="font-bold mb-1">Inscription réussie !</h3>
@@ -134,7 +100,7 @@ const AuthPage = () => {
             }
           );
 
-          // Reset form and switch to login after success
+          // Réinitialise le formulaire et bascule vers la page de connexion après 3 secondes
           setTimeout(() => {
             setIsLogin(true);
             setFormData({
@@ -145,34 +111,12 @@ const AuthPage = () => {
             });
           }, 3000);
         }
-        return true;
-      } catch (error: any) {
-        if (error.status === 504 || error.message?.includes('timeout')) {
-          if (retryCount < MAX_RETRIES) {
-            setRetryCount(prev => prev + 1);
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
-            return false;
-          }
-        }
-        throw error;
       }
-    };
-
-    try {
-      let success = false;
-      while (!success && retryCount < MAX_RETRIES) {
-        success = await attemptAuth();
-      }
-      
-      if (!success) {
-        throw new Error("Le serveur ne répond pas. Veuillez réessayer plus tard.");
-      }
-    } catch (err: any) {
+    } catch (err) {
+      setError("Une erreur est survenue. Veuillez réessayer.");
       console.error("Auth error:", err);
-      setError(err.message || "Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setLoading(false);
-      setRetryCount(0);
     }
   };
 
@@ -182,9 +126,6 @@ const AuthPage = () => {
       ...prev,
       [name]: value
     }));
-
-    // Clear errors when user starts typing
-    if (error) setError(null);
   };
 
   return (
@@ -266,11 +207,6 @@ const AuthPage = () => {
                   placeholder="••••••••"
                 />
               </div>
-              {!isLogin && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.
-                </p>
-              )}
             </div>
 
             {!isLogin && (
@@ -320,7 +256,7 @@ const AuthPage = () => {
 
             <div>
               <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-                {loading ? (retryCount > 0 ? `Nouvelle tentative (${retryCount}/${MAX_RETRIES})...` : 'Traitement en cours...') : (isLogin ? 'Se connecter' : "S'inscrire")}
+                {loading ? 'Traitement en cours...' : (isLogin ? 'Se connecter' : "S'inscrire")}
               </Button>
               {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
               {success && <p className="text-green-600 text-sm text-center mt-2">{success}</p>}

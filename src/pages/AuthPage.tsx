@@ -20,6 +20,8 @@ const AuthPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   // Vérification de l'authentification au chargement
   useEffect(() => {
@@ -54,32 +56,34 @@ const AuthPage = () => {
 
     setLoading(true);
 
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-        
-        if (error) {
-          setError(error.message);
-        } else {
+    const attemptAuth = async () => {
+      try {
+        if (isLogin) {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+          
+          if (error) {
+            throw error;
+          }
+          
           setSuccess("Connexion réussie !");
           setTimeout(() => navigate('/dashboard'), 1200);
-        }
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: { name: formData.name }
-          }
-        });
-
-        if (error) {
-          setError(error.message);
         } else {
-          // Affiche le toast de confirmation
+          const { error } = await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+              data: { name: formData.name },
+              emailRedirectTo: `${window.location.origin}/auth/callback`
+            }
+          });
+
+          if (error) {
+            throw error;
+          }
+
           toast.success(
             <div className="flex flex-col items-center">
               <h3 className="font-bold mb-1">Inscription réussie !</h3>
@@ -100,7 +104,7 @@ const AuthPage = () => {
             }
           );
 
-          // Réinitialise le formulaire et bascule vers la page de connexion après 3 secondes
+          // Reset form and switch to login after success
           setTimeout(() => {
             setIsLogin(true);
             setFormData({
@@ -111,12 +115,34 @@ const AuthPage = () => {
             });
           }, 3000);
         }
+        return true;
+      } catch (error: any) {
+        if (error.status === 504 || error.message?.includes('timeout')) {
+          if (retryCount < MAX_RETRIES) {
+            setRetryCount(prev => prev + 1);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+            return false;
+          }
+        }
+        throw error;
       }
-    } catch (err) {
-      setError("Une erreur est survenue. Veuillez réessayer.");
+    };
+
+    try {
+      let success = false;
+      while (!success && retryCount < MAX_RETRIES) {
+        success = await attemptAuth();
+      }
+      
+      if (!success) {
+        throw new Error("Le serveur ne répond pas. Veuillez réessayer plus tard.");
+      }
+    } catch (err: any) {
       console.error("Auth error:", err);
+      setError(err.message || "Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setLoading(false);
+      setRetryCount(0);
     }
   };
 
@@ -256,7 +282,7 @@ const AuthPage = () => {
 
             <div>
               <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-                {loading ? 'Traitement en cours...' : (isLogin ? 'Se connecter' : "S'inscrire")}
+                {loading ? (retryCount > 0 ? `Nouvelle tentative (${retryCount}/${MAX_RETRIES})...` : 'Traitement en cours...') : (isLogin ? 'Se connecter' : "S'inscrire")}
               </Button>
               {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
               {success && <p className="text-green-600 text-sm text-center mt-2">{success}</p>}

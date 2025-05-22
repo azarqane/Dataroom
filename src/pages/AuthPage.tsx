@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
-import { Shield, Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import Logo from "../components/Logo";
@@ -24,7 +24,6 @@ const AuthPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fonction de validation email
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
@@ -82,15 +81,12 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="flex justify-center">
-  <Logo size={48} textSize="text-3xl" />
-</div>
-
+          <Logo size={48} textSize="text-3xl" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-2xl md:text-3xl font-bold text-gray-900">
           {isLogin ? 'Connexion à votre compte' : 'Créer un compte'}
         </h2>
       </div>
@@ -114,7 +110,7 @@ const AuthPage = () => {
                     required
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                    className="input pl-10"
                     placeholder="John Doe"
                   />
                 </div>
@@ -137,7 +133,7 @@ const AuthPage = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="input pl-10"
                   placeholder="exemple@email.com"
                 />
               </div>
@@ -159,7 +155,7 @@ const AuthPage = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="input pl-10"
                   placeholder="••••••••"
                 />
               </div>
@@ -181,7 +177,7 @@ const AuthPage = () => {
                     required
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                    className="input pl-10"
                     placeholder="••••••••"
                   />
                 </div>
@@ -195,7 +191,7 @@ const AuthPage = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                     Se souvenir de moi
@@ -203,7 +199,7 @@ const AuthPage = () => {
                 </div>
 
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-teal-600 hover:text-teal-500">
+                  <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
                     Mot de passe oublié ?
                   </a>
                 </div>
@@ -214,9 +210,9 @@ const AuthPage = () => {
               <Button type="submit" variant="primary" className="w-full" disabled={loading}>
                 {isLogin ? 'Se connecter' : "S'inscrire"}
               </Button>
-              {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
-              {success && <p className="text-green-600 text-sm text-center mt-2">{success}</p>}
-              {loading && <p className="text-gray-500 text-sm text-center mt-2">Traitement en cours...</p>}
+              {error && <p className="mt-2 text-sm text-red-600 text-center">{error}</p>}
+              {success && <p className="mt-2 text-sm text-green-600 text-center">{success}</p>}
+              {loading && <p className="mt-2 text-sm text-gray-500 text-center">Traitement en cours...</p>}
             </div>
           </form>
 
@@ -239,7 +235,7 @@ const AuthPage = () => {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                className="w-full btn btn-outline"
               >
                 {isLogin ? 'Créer un nouveau compte' : 'Se connecter'}
               </button>

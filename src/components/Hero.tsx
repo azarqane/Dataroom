@@ -7,48 +7,58 @@ export const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" id="hero">
+    <section className="relative pt-16 md:pt-20 lg:pt-32 pb-16 lg:pb-24 overflow-hidden" id="hero">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50 z-0"></div>
       <div className="absolute right-0 top-1/4 w-1/3 h-64 bg-teal-100 rounded-full filter blur-3xl opacity-20"></div>
       <div className="absolute left-0 bottom-1/3 w-1/4 h-64 bg-blue-100 rounded-full filter blur-3xl opacity-20"></div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center">
-          <div className="w-full lg:w-1/2 mb-12 lg:mb-0">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          <div className="w-full lg:w-1/2">
             <div className="max-w-2xl mx-auto lg:mx-0">
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 mb-6">
                 <span className="w-2 h-2 rounded-full bg-teal-500 mr-2"></span>
                 <span className="text-sm font-medium text-teal-700">Solution RGPD-compliant</span>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-tight mb-6">
                 La Data Room <span className="text-teal-600">sécurisée</span> pour tous vos documents sensibles
               </h1>
               
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-8 max-w-xl">
                 Partagez, collaborez et sécurisez vos documents confidentiels avec notre solution de Data Room ultra-sécurisée et intuitive.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button variant="primary" size="lg" onClick={() => navigate('/auth')}>
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  onClick={() => navigate('/auth')}
+                  className="w-full sm:w-auto"
+                >
                   Démarrer l'essai gratuit
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => navigate('/auth')}>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => navigate('/auth')}
+                  className="w-full sm:w-auto"
+                >
                   Demander une démo
                 </Button>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
+                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2 flex-shrink-0" />
                   <span className="text-gray-700">Chiffrement AES-256</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
+                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2 flex-shrink-0" />
                   <span className="text-gray-700">Conforme RGPD</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
+                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2 flex-shrink-0" />
                   <span className="text-gray-700">Support 24/7</span>
                 </div>
               </div>
@@ -73,7 +83,7 @@ export const Hero = () => {
                       <span className="text-xs text-gray-400">neutvault.fr</span>
                     </div>
                   </div>
-                  <div className="relative w-full h-72 bg-gray-100">
+                  <div className="relative w-full aspect-video bg-gray-100">
                     <img 
                       src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                       alt="Interface de la data room" 

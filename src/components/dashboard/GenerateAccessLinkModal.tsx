@@ -1,4 +1,3 @@
-```typescript
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../lib/supabase';
@@ -297,4 +296,3 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
 };
 
 export default GenerateAccessLinkModal;
-```

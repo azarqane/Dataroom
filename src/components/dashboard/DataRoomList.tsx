@@ -1,4 +1,3 @@
-```typescript
 import React from 'react';
 import { FolderOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +56,7 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
                 </button>
 
                 <button
-                  onClick={() => navigate(`/dataroom/${room.id}`)}
+                  onClick={() => navigate(`/dataroom/${room.id}`);}
                   className="btn btn-primary flex-1 sm:flex-none text-sm whitespace-nowrap"
                   title="Ouvrir la Data Room"
                 >
@@ -74,4 +73,3 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
 };
 
 export default DataRoomList;
-```

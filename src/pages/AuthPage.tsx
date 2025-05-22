@@ -4,6 +4,7 @@ import { Shield, Mail, Lock, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import Logo from "../components/Logo";
+import { toast } from 'react-hot-toast';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -71,10 +72,39 @@ const AuthPage = () => {
           data: { name: formData.name }
         }
       });
-      if (error) setError(error.message);
-      else {
-        setSuccess("Inscription réussie !");
-        setTimeout(() => navigate('/dashboard'), 1200);
+      if (error) {
+        setError(error.message);
+      } else {
+        // Afficher le toast de confirmation
+        toast.success(
+          <div className="flex flex-col items-center">
+            <h3 className="font-bold mb-1">Inscription réussie !</h3>
+            <p className="text-sm text-center">
+              Un email de confirmation vous a été envoyé.<br/>
+              Veuillez vérifier votre boîte de réception.
+            </p>
+          </div>,
+          {
+            duration: 4000,
+            style: {
+              background: '#10B981',
+              color: '#fff',
+              padding: '16px',
+            },
+            icon: '✉️',
+          }
+        );
+        
+        // Rediriger vers la page de connexion après 3 secondes
+        setTimeout(() => {
+          setIsLogin(true);
+          setFormData({
+            email: '',
+            password: '',
+            confirmPassword: '',
+            name: ''
+          });
+        }, 3000);
       }
     }
     setLoading(false);

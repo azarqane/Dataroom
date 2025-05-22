@@ -8,7 +8,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    storage: localStorage,
+    storageKey: 'supabase.auth.token'
   },
   global: {
     headers: {
@@ -16,7 +18,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
   },
   realtime: {
-    timeout: 60000, // 60 seconds
-    retries: 3
+    timeout: 120000, // Increased to 120 seconds
+    retries: 5, // Increased number of retries
+    backoff: {
+      maxDelay: 10000, // Maximum delay between retries (10 seconds)
+      minDelay: 1000 // Minimum delay between retries (1 second)
+    }
   }
 });

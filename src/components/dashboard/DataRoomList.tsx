@@ -1,5 +1,6 @@
+```tsx
 import React from 'react';
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface DataRoomListProps {
@@ -12,56 +13,68 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
   const navigate = useNavigate();
 
   return (
-    <ul className="space-y-4">
+    <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {datarooms.map((room: any) => (
         <li
           key={room.id}
-          className="group bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-teal-100 transition-all duration-200"
+          className="group bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100/50 hover:border-primary-100 transition-all duration-200"
         >
-          <div className="p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="font-extrabold text-xl text-teal-700 group-hover:text-teal-900 transition mb-1">
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="font-bold text-xl text-gray-900 group-hover:text-primary-700 transition-colors line-clamp-1">
                   {room.name}
-                </div>
-                <div className="text-xs text-gray-400">
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
                   Créée le {new Date(room.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex-shrink-0 ml-4">
+                <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
+                  <FolderOpen className="w-5 h-5 text-primary-600" />
                 </div>
               </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-50 rounded-xl p-3">
+                <div className="text-sm text-gray-500">Documents</div>
+                <div className="text-lg font-semibold text-gray-900">0</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <div className="text-sm text-gray-500">Accès</div>
+                <div className="text-lg font-semibold text-gray-900">0</div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => navigate(`/dataroom/${room.id}`)}
+                className="btn w-full bg-primary-600 text-white hover:bg-primary-700 group-hover:shadow-md transition-all"
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Ouvrir
+              </button>
               
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2">
                 <button
-                  className="btn btn-secondary flex-1 sm:flex-none text-sm"
                   onClick={() => onGenerateLink(room)}
-                  title="Générer un lien d'accès sécurisé"
+                  className="btn flex-1 bg-secondary-600 text-white hover:bg-secondary-700"
+                  title="Générer un lien d'accès"
                 >
-                  <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 mr-1.5">
-                    <circle cx="15" cy="5" r="3" stroke="currentColor" strokeWidth="2"/>
-                    <circle cx="5" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
-                    <circle cx="15" cy="15" r="3" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M7.8 8.6l4.4-2.2M12.2 13.6l-4.4-2.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Lien accès
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  Lien d'accès
                 </button>
-
+                
                 <button
-                  className="btn bg-gradient-to-r from-red-600 to-pink-500 text-white hover:from-red-700 hover:to-pink-600 flex-1 sm:flex-none text-sm"
                   onClick={() => onDelete(room)}
-                  title="Supprimer la data room"
+                  className="btn bg-red-100 text-red-600 hover:bg-red-200"
+                  title="Supprimer"
                 >
-                  <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 mr-1.5">
-                    <path d="M4 4l12 12m0-12L4 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Supprimer
-                </button>
-
-                <button
-                  className="btn btn-primary flex-1 sm:flex-none text-sm"
-                  onClick={() => navigate(`/dataroom/${room.id}`)}
-                  title="Ouvrir la Data Room"
-                >
-                  <FolderOpen className="w-4 h-4 mr-1.5" />
-                  Ouvrir
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -73,3 +86,4 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
 };
 
 export default DataRoomList;
+```

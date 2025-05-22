@@ -5,11 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    hmr: {
-      clientPort: 443,
-      host: 'localhost',
-      protocol: 'wss'
-    },
     watch: {
       usePolling: true
     }

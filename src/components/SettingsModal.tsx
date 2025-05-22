@@ -4,7 +4,21 @@ import { v4 as uuidv4 } from "uuid";
 import { ClipboardCopy, ArrowLeft, X, Trash2, Info, Settings as Gear } from "lucide-react";
 import { toast } from "react-hot-toast";
 import countryList from 'react-select-country-list';
+import DeleteDataRoomModal from './dashboard/DeleteDataRoomModal';
+import { useNavigate } from "react-router-dom";
+import {
+  FolderOpen,
+  FileText,
+  Settings,
+  Link,
+  Loader2,
 
+  Eye,
+  User2,
+
+  UploadCloud,
+
+} from "lucide-react";
 type ThumbBubbleProps = {
   value: number | string;
   unit?: string;
@@ -52,6 +66,7 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
       sessionStorage.setItem("settingsTab", newTab);
     }
   }
+  const navigate = useNavigate();
 
   // States
   const [roomName, setRoomName] = useState(room.name);
@@ -60,6 +75,12 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
   const [password, setPassword] = useState("");
   const [welcomeMsg, setWelcomeMsg] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Suppression sécurisée
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteInput, setDeleteInput] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [notifyOnAccess, setNotifyOnAccess] = useState(false);
   const [downloadDisabled, setDownloadDisabled] = useState(false);
@@ -82,6 +103,7 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
   const [showUsageBubble, setShowUsageBubble] = useState(false);
   const [showExpireBubble, setShowExpireBubble] = useState(false);
 
+  // Chargement des liens d'accès invités
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -109,7 +131,6 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
-  // Handler
   async function handleSaveGeneral() {
     setIsSaving(true);
     const validUntil = addDays(new Date(), validity);
@@ -130,15 +151,30 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     }
   }
 
-  async function handleDeleteRoom() {
-    if (!window.confirm("Suppression définitive de la Data Room ?")) return;
-    const { error } = await supabase.from("datarooms").delete().eq("id", room.id);
-    if (!error) {
+  // Suppression DataRoom (identique à ta liste)
+  async function handleDeleteRoomConfirm(e: React.FormEvent) {
+    e.preventDefault();
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      // Supprime la Data Room par ID exactement comme dans ta DataRoomList
+      const { error } = await supabase.from("datarooms").delete().eq("id", room.id);
+      if (error) {
+        setDeleteError("Erreur lors de la suppression");
+        setDeleteLoading(false);
+        return;
+      }
+      setShowConfirmDelete(false);
+      setDeleteInput("");
+      setDeleteLoading(false);
       toast.success("Data Room supprimée.");
+      navigate("/dashboard"); // ou la route exacte de ta liste de Data Rooms
       onClose();
       afterChange?.();
-    } else {
-      toast.error("Erreur lors de la suppression");
+
+    } catch (err) {
+      setDeleteError("Erreur inconnue");
+      setDeleteLoading(false);
     }
   }
 
@@ -212,24 +248,26 @@ const SettingsModal: React.FC<Props> = ({ room, onClose, afterChange }) => {
     afterChange?.();
     toast.success("Lien révoqué !");
   }
-useEffect(() => {
-  function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Escape") onClose();
-  }
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [onClose]);
-  return (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-teal-100/90 via-white/95 to-blue-100/90 font-sans overflow-auto"
-    onClick={onClose} // Clic dehors ferme la modale
-  >
-    <div
-      className="relative bg-white/95 rounded-3xl shadow-2xl p-0 w-[950px] h-[970px] flex flex-col transition-all ring-2 ring-teal-100/50"
-      style={{ backdropFilter: "blur(10px)" }}
-      onClick={e => e.stopPropagation()} // Empêche le clic intérieur de fermer
-    >
 
+  // Fermer modale avec ESC
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-teal-100/90 via-white/95 to-blue-100/90 font-sans overflow-auto"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white/95 rounded-3xl shadow-2xl p-0 w-[950px] h-[970px] flex flex-col transition-all ring-2 ring-teal-100/50"
+        style={{ backdropFilter: "blur(10px)" }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Fleche retour */}
         <button
           onClick={onClose}
@@ -265,28 +303,28 @@ useEffect(() => {
           {tab === "general" && (
             <div className="space-y-6">
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Nom
                 </label>
                 <input
-                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold transition"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold transition font-sans"
                   value={roomName}
                   onChange={e => setRoomName(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Description
                 </label>
                 <textarea
-                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base transition"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base transition font-sans"
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2">
+                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2 font-sans">
                   Validité de la data room
                   <span title="Nombre de jours avant expiration automatique de la room" className="inline-flex">
                     <Info className="w-5 h-5 text-teal-400" />
@@ -309,7 +347,7 @@ useEffect(() => {
                       <ThumbBubble value={validity} unit="j" />
                     )}
                   </div>
-                  <span className="text-base font-semibold text-teal-700 w-28 text-right">
+                  <span className="text-base font-semibold text-teal-700 w-28 text-right font-sans">
                     {validity} jours
                     <br />
                     <span className="text-xs text-gray-500 font-normal">
@@ -319,24 +357,24 @@ useEffect(() => {
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Mot de passe d’accès (optionnel)
                 </label>
                 <input
                   type="password"
-                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition font-sans"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Définir un mot de passe pour accéder à la room"
                 />
               </div>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Message d’accueil personnalisé
                 </label>
                 <input
                   type="text"
-                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition"
+                  className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 transition font-sans"
                   value={welcomeMsg}
                   onChange={e => setWelcomeMsg(e.target.value)}
                   placeholder="Message affiché à l’ouverture de la room"
@@ -346,12 +384,14 @@ useEffect(() => {
                 <button
                   onClick={handleSaveGeneral}
                   disabled={isSaving}
-                  className="flex-1 bg-gradient-to-r from-teal-500 to-teal-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-teal-600 hover:to-teal-800 active:scale-95 transition"
+                  className="flex-1 bg-gradient-to-r from-teal-500 to-teal-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-teal-600 hover:to-teal-800 active:scale-95 transition font-sans"
                 >{isSaving ? "Enregistrement..." : "Enregistrer"}</button>
                 <button
-                  onClick={handleDeleteRoom}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-red-600 hover:to-pink-600 active:scale-95 transition flex items-center justify-center gap-2 mt-4 md:mt-0"
-                ><Trash2 className="inline-block w-5 h-5 -mt-0.5" /> Supprimer la Data Room</button>
+                  onClick={() => setShowConfirmDelete(true)}
+                  className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-red-600 hover:to-pink-600 active:scale-95 transition flex items-center justify-center gap-2 mt-4 md:mt-0 font-sans"
+                >
+                  <Trash2 className="inline-block w-5 h-5 -mt-0.5" /> Supprimer la Data Room
+                </button>
               </div>
             </div>
           )}
@@ -363,46 +403,46 @@ useEffect(() => {
               <div className="mb-7">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                   <div>
-                    <label className="block font-bold mb-2 text-teal-800 text-base">
-                      Nom invité <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Prénom"
-                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
-                      value={firstName}
-                      onChange={e => setFirstName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold mb-2 text-teal-800 text-base">
+                    <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                       Prénom invité <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
+                      placeholder="Prénom"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold font-sans transition"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
+                      Nom invité <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
                       placeholder="Nom"
-                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold font-sans transition"
                       value={lastName}
                       onChange={e => setLastName(e.target.value)}
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block font-bold mb-2 text-teal-800 text-base">
+                    <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                       Email invité <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
                       required
                       placeholder="Email invité"
-                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 transition"
+                      className="block w-full mb-3 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 text-base font-semibold font-sans transition"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                     />
                   </div>
                 </div>
-                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2">
+                <label className="block font-bold mb-2 text-teal-800 text-base flex items-center gap-2 font-sans">
                   Validité du lien d'accès
                   <span title="Durée de validité du lien" className="inline-flex">
                     <Info className="w-5 h-5 text-teal-400" />
@@ -425,14 +465,14 @@ useEffect(() => {
                       <ThumbBubble value={expiresDays} unit="j" />
                     )}
                   </div>
-                  <span className="w-44 text-right text-base text-blue-700">
+                  <span className="w-44 text-right text-base text-blue-700 font-semibold font-sans">
                     {expiresDays} jours<br />
                     <span className="text-xs text-gray-500 font-normal">
                       Expire : {getExpireDate(expiresDays)}
                     </span>
                   </span>
                 </div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Nombre d’utilisations <span className="text-red-500">*</span>
                 </label>
                 <div className="flex items-center gap-3 relative group mb-2">
@@ -452,11 +492,11 @@ useEffect(() => {
                       <ThumbBubble value={usageLimit} unit="x" />
                     )}
                   </div>
-                  <span className="w-28 text-right text-violet-700 font-semibold text-base">
+                  <span className="w-28 text-right text-violet-700 font-semibold text-base font-sans">
                     {usageLimit} fois
                   </span>
                 </div>
-                <label className="inline-flex items-center mt-3 mb-2 cursor-pointer select-none gap-3 text-base font-bold text-teal-800">
+                <label className="inline-flex items-center mt-3 mb-2 cursor-pointer select-none gap-3 text-base font-bold text-teal-800 font-sans">
                   <input
                     type="checkbox"
                     checked={geoRestricted}
@@ -467,7 +507,7 @@ useEffect(() => {
                 </label>
                 {geoRestricted && (
                   <select
-                    className="block w-full mb-2 px-4 py-3 border-2 border-blue-100 rounded-2xl bg-gray-50"
+                    className="block w-full mb-2 px-4 py-3 border-2 border-blue-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-base font-semibold font-sans transition"
                     value={selectedCountry || ""}
                     onChange={e => setSelectedCountry(e.target.value)}
                   >
@@ -480,51 +520,59 @@ useEffect(() => {
                 <button
                   onClick={handleCreateLink}
                   disabled={creating}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-blue-600 hover:to-blue-800 active:scale-95 transition mt-6 text-lg"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-2xl font-bold shadow-lg hover:from-blue-600 hover:to-blue-800 active:scale-95 transition mt-6 text-lg font-sans"
                 >{creating ? "Création..." : "Générer un accès invité"}</button>
                 {error && <div className="text-red-500 mt-3 text-base font-semibold">{error}</div>}
               </div>
 
               {/* Bloc scrollable de la liste des liens */}
               <div className="flex-1 min-h-0 flex flex-col">
-                <h4 className="font-bold mb-4 text-teal-700 text-lg">Liens existants</h4>
-                <div
-                  className="rounded-xl border border-gray-100 bg-white/70 flex-1 min-h-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent"
-                  style={{ minHeight: "100px", maxHeight: "100%" }}
-                >
-                  <ul className="space-y-4">
-                    {links.map((l) => (
-                      <li key={l.id} className="flex flex-col md:flex-row md:items-center justify-between text-base border-b pb-3 gap-3 md:gap-6">
-                        <div className="flex flex-col gap-1">
-                          <span className="font-semibold text-teal-700">{l.first_name} {l.last_name}</span>
-                          <span className="text-xs text-gray-500">{l.email || "—"}</span>
-                          <span className="flex flex-wrap gap-2 mt-1">
-                            {l.expires_at
-                              ? <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-xl text-xs font-semibold">Expire {new Date(l.expires_at).toLocaleDateString()} à {new Date(l.expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                              : <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-xl text-xs font-semibold">Illimité</span>}
-                            <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-xl text-xs font-semibold">
-                              Limite&nbsp;{l.usage_limit ?? "—"}
-                            </span>
-                            {l.country_restriction && (
-                              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-xl text-xs font-semibold">
-                                {l.country_restriction}
+  <h2 className="text-lg font-semibold mb-2 text-blue-800 flex items-center gap-1">
+            <Link className="w-5 h-5" /> Liens d’accès générés
+          </h2>
+  <div
+    className="rounded-xl border border-gray-100 bg-white/70 flex-1 min-h-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent"
+    style={{ minHeight: "180px", maxHeight: "440px" }}
+  >
+    {links.length === 0 ? (
+      <div className="h-full flex items-center justify-center text-gray-400 text-center rounded-lg border border-dashed border-gray-200 bg-gray-50 font-sans text-base">
+        Aucun accès généré pour l’instant.
+      </div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {links.map((l) => (
+                        <li key={l.id} className="flex flex-col md:flex-row md:items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border border-gray-100 shadow gap-3 md:gap-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-teal-700 font-sans">{l.first_name} {l.last_name}</span>
+                            <span className="text-xs text-gray-500 font-sans">{l.email || "—"}</span>
+                            <span className="flex flex-wrap gap-2 mt-1">
+                              {l.expires_at
+                                ? <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-xl text-xs font-semibold font-sans">Expire {new Date(l.expires_at).toLocaleDateString()} à {new Date(l.expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                                : <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-xl text-xs font-semibold font-sans">Illimité</span>}
+                              <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-xl text-xs font-semibold font-sans">
+                                Limite&nbsp;{l.usage_limit ?? "—"}
                               </span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                          <CopyAccessLinkButton token={l.token} />
-                          <button
-                            className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 font-semibold shadow"
-                            onClick={() => handleDeleteLink(l.id)}
-                            title="Révoquer"
-                          >
-                            <X className="w-4 h-4" /> Révoquer
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                              {l.country_restriction && (
+                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-xl text-xs font-semibold font-sans">
+                                  {l.country_restriction}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <CopyAccessLinkButton token={l.token} />
+                            <button
+                              className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 font-semibold shadow font-sans transition"
+                              onClick={() => handleDeleteLink(l.id)}
+                              title="Révoquer"
+                            >
+                              <X className="w-4 h-4" /> Révoquer
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
@@ -533,7 +581,7 @@ useEffect(() => {
           {/* ----------- AVANCÉ ------------ */}
           {tab === "advanced" && (
             <div className="space-y-8">
-              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800 font-sans">
                 <input
                   type="checkbox"
                   checked={notifyOnAccess}
@@ -542,7 +590,7 @@ useEffect(() => {
                 />
                 Notifier l’admin à chaque consultation d’un document
               </label>
-              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800 font-sans">
                 <input
                   type="checkbox"
                   checked={downloadDisabled}
@@ -551,7 +599,7 @@ useEffect(() => {
                 />
                 Désactiver le téléchargement des documents (lecture seule)
               </label>
-              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800 font-sans">
                 <input
                   type="checkbox"
                   checked={watermarkEnabled}
@@ -560,7 +608,7 @@ useEffect(() => {
                 />
                 Filigrane personnalisé sur tous les documents consultés
               </label>
-              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800">
+              <label className="inline-flex items-center gap-3 text-base font-bold text-teal-800 font-sans">
                 <input
                   type="checkbox"
                   checked={requireConsent}
@@ -570,38 +618,55 @@ useEffect(() => {
                 Consentement obligatoire (CGU/RGPD) à chaque accès
               </label>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Limiter l’accès à certains domaines email (optionnel)
                 </label>
                 <input
                   type="text"
-                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 font-sans"
                   value={allowedDomains}
                   onChange={e => setAllowedDomains(e.target.value)}
                   placeholder="Exemple : moncabinet.fr, societe.com"
                 />
-                <div className="text-xs text-gray-500 ml-1">
+                <div className="text-xs text-gray-500 ml-1 font-sans">
                   Séparer les domaines par une virgule. Laisser vide pour aucune restriction.
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-2 text-teal-800 text-base">
+                <label className="block font-bold mb-2 text-teal-800 text-base font-sans">
                   Limiter le nombre d’utilisateurs simultanés
                 </label>
                 <input
                   type="number"
                   min={1}
                   max={50}
-                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  className="block w-full mb-2 px-4 py-3 border-2 border-teal-100 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-200 font-sans"
                   value={maxConcurrentUsers}
                   onChange={e => setMaxConcurrentUsers(Number(e.target.value))}
                 />
-                <div className="text-xs text-gray-500 ml-1">
+                <div className="text-xs text-gray-500 ml-1 font-sans">
                   (Optionnel) – Par défaut : 5 utilisateurs. Maximum : 50.
                 </div>
               </div>
             </div>
           )}
+
+          {/* MODALE DE SUPPRESSION */}
+          <DeleteDataRoomModal
+            isOpen={showConfirmDelete}
+            room={room}
+            loading={deleteLoading}
+            error={deleteError}
+            confirmName={deleteInput}
+            onClose={() => {
+              setShowConfirmDelete(false);
+              setDeleteInput("");
+              setDeleteError(null);
+              setDeleteLoading(false);
+            }}
+            onChange={setDeleteInput}
+            onSubmit={handleDeleteRoomConfirm}
+          />
         </div>
       </div>
     </div>

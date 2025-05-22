@@ -39,6 +39,25 @@ const AuthPage = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?/`~]/.test(password);
+
+    const errors = [];
+    if (!hasLowerCase) errors.push("une lettre minuscule");
+    if (!hasUpperCase) errors.push("une lettre majuscule");
+    if (!hasNumber) errors.push("un chiffre");
+    if (!hasSpecialChar) errors.push("un caractère spécial");
+
+    return {
+      isValid: hasLowerCase && hasUpperCase && hasNumber && hasSpecialChar,
+      errors
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -49,9 +68,17 @@ const AuthPage = () => {
       return;
     }
 
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas");
-      return;
+    if (!isLogin) {
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        setError(`Le mot de passe doit contenir au moins ${passwordValidation.errors.join(', ')}`);
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        setError("Les mots de passe ne correspondent pas");
+        return;
+      }
     }
 
     setLoading(true);
@@ -65,6 +92,9 @@ const AuthPage = () => {
           });
           
           if (error) {
+            if (error.message === 'Invalid login credentials') {
+              throw new Error('Email ou mot de passe incorrect');
+            }
             throw error;
           }
           
@@ -152,6 +182,9 @@ const AuthPage = () => {
       ...prev,
       [name]: value
     }));
+
+    // Clear errors when user starts typing
+    if (error) setError(null);
   };
 
   return (
@@ -233,6 +266,11 @@ const AuthPage = () => {
                   placeholder="••••••••"
                 />
               </div>
+              {!isLogin && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.
+                </p>
+              )}
             </div>
 
             {!isLogin && (

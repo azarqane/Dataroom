@@ -1,4 +1,3 @@
-```tsx
 import React from 'react';
 import { FolderOpen, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -86,4 +85,3 @@ const DataRoomList: React.FC<DataRoomListProps> = ({ datarooms, onDelete, onGene
 };
 
 export default DataRoomList;
-```

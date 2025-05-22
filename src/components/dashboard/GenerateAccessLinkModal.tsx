@@ -1,8 +1,10 @@
+```typescript
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 import countryList from 'react-select-country-list';
+import { X, Copy, Check, Globe } from 'lucide-react';
 
 interface GenerateAccessLinkModalProps {
   isOpen: boolean;
@@ -113,24 +115,25 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl border-2 border-teal-100 shadow-2xl w-full max-w-lg">
+      <div className="bg-white rounded-xl border-2 border-primary-100 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="p-6 sm:p-8">
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 bg-teal-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg hover:bg-teal-700 transition"
-            title="Fermer"
-          >
-            Fermer
-          </button>
-
-          <h3 className="text-lg font-bold mb-6 text-gray-900 pr-20">
-            Générer un lien d'accès sécurisé
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">
+              Générer un lien d'accès sécurisé
+            </h3>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition"
+              title="Fermer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           <form onSubmit={handleCreate} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium mb-1 text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Prénom invité <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -144,7 +147,7 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
               </div>
               
               <div>
-                <label className="block font-medium mb-1 text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nom invité <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -159,7 +162,7 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
             </div>
 
             <div>
-              <label className="block font-medium mb-1 text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email invité <span className="text-red-500">*</span>
               </label>
               <input
@@ -172,42 +175,47 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block font-medium mb-1 text-gray-700">
-                Date d'expiration
-              </label>
-              <input
-                type="datetime-local"
-                className="input"
-                value={expiration}
-                onChange={e => setExpiration(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
-              />
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date d'expiration
+                </label>
+                <input
+                  type="datetime-local"
+                  className="input"
+                  value={expiration}
+                  onChange={e => setExpiration(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                />
+              </div>
 
-            <div>
-              <label className="block font-medium mb-1 text-gray-700">
-                Nombre d'utilisations maximum
-              </label>
-              <input
-                type="number"
-                className="input"
-                min="1"
-                max="100"
-                value={usageLimit}
-                onChange={e => setUsageLimit(Number(e.target.value))}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre d'utilisations maximum
+                </label>
+                <input
+                  type="number"
+                  className="input"
+                  min="1"
+                  max="100"
+                  value={usageLimit}
+                  onChange={e => setUsageLimit(Number(e.target.value))}
+                />
+              </div>
             </div>
 
             <div className="space-y-3">
-              <label className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={geoRestricted}
                   onChange={() => setGeoRestricted(!geoRestricted)}
-                  className="form-checkbox h-4 w-4 text-teal-600"
+                  className="form-checkbox h-4 w-4 text-primary-600 rounded"
                 />
-                <span className="text-gray-700">Restreindre géographiquement</span>
+                <span className="text-sm text-gray-700 flex items-center">
+                  <Globe className="w-4 h-4 mr-1" />
+                  Restreindre géographiquement
+                </span>
               </label>
 
               {geoRestricted && (
@@ -227,7 +235,9 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
             </div>
 
             {error && (
-              <div className="text-red-600 text-sm">{error}</div>
+              <div className="text-sm text-red-600 bg-red-50 rounded-lg p-3">
+                {error}
+              </div>
             )}
 
             <button
@@ -235,13 +245,25 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
               className="btn btn-primary w-full"
               disabled={creating}
             >
-              {creating ? "Génération en cours..." : "Générer le lien"}
+              {creating ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Génération en cours...
+                </span>
+              ) : (
+                "Générer le lien"
+              )}
             </button>
           </form>
 
           {link && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Lien d'accès généré :</p>
+            <div className="mt-6 bg-gray-50 rounded-lg p-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">
+                Lien d'accès généré :
+              </p>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -253,7 +275,17 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
                   onClick={handleCopy}
                   className="btn btn-secondary whitespace-nowrap"
                 >
-                  {copied ? "Copié !" : "Copier"}
+                  {copied ? (
+                    <span className="flex items-center">
+                      <Check className="w-4 h-4 mr-1" />
+                      Copié !
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copier
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
@@ -265,3 +297,4 @@ const GenerateAccessLinkModal: React.FC<GenerateAccessLinkModalProps> = ({
 };
 
 export default GenerateAccessLinkModal;
+```

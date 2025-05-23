@@ -8,48 +8,75 @@ export const Hero = () => {
 
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" id="hero">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-950 to-gray-900 z-0"></div>
+
       <div className="absolute right-0 top-1/4 w-1/3 h-64 bg-teal-100 rounded-full filter blur-3xl opacity-20"></div>
-      <div className="absolute left-0 bottom-1/3 w-1/4 h-64 bg-blue-100 rounded-full filter blur-3xl opacity-20"></div>
-      
+<div className="absolute left-0 bottom-1/3 w-1/4 h-64 bg-blue-900 rounded-full filter blur-3xl opacity-30"></div>      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="w-full lg:w-1/2 mb-12 lg:mb-0">
             <div className="max-w-2xl mx-auto lg:mx-0">
-              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 mb-6">
+              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 border border-teal-700 mb-6">
                 <span className="w-2 h-2 rounded-full bg-teal-500 mr-2"></span>
                 <span className="text-sm font-medium text-teal-700">Solution RGPD-compliant</span>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-100 leading-tight mb-6">
                 La Data Room <span className="text-teal-600">sécurisée</span> pour tous vos documents sensibles
               </h1>
               
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
+              <p className="text-lg sm:text-xl text-gray-400 mb-8 max-w-xl">
                 Partagez, collaborez et sécurisez vos documents confidentiels avec notre solution de Data Room ultra-sécurisée et intuitive.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button variant="primary" size="lg" onClick={() => navigate('/auth')}>
-                  Démarrer l'essai gratuit
-                </Button>
-                <Button variant="outline" size="lg" onClick={() => navigate('/auth')}>
-                  Demander une démo
-                </Button>
-              </div>
+  {/* Bouton principal */}
+  <Button
+    onClick={() => navigate('/auth')}
+    className="
+      px-8 py-3 rounded-xl 
+      bg-gradient-to-tr from-teal-600 to-teal-400 
+      text-white font-bold text-lg 
+      shadow-lg hover:brightness-110 hover:scale-105 
+      transition-all duration-150
+      border-0
+      focus:outline-none focus:ring-2 focus:ring-teal-400
+    "
+  >
+    Démarrer l'essai gratuit
+  </Button>
+
+  {/* Bouton secondaire “ghost” */}
+  <Button
+    onClick={() => navigate('/auth')}
+    className="
+      px-8 py-3 rounded-xl 
+      border-2 border-teal-400 
+      bg-transparent 
+      text-teal-300 font-bold text-lg 
+      shadow hover:bg-teal-900/20 hover:text-white hover:border-teal-300
+      transition-all duration-150
+      focus:outline-none focus:ring-2 focus:ring-teal-400
+    "
+    style={{ minWidth: 180 }}
+  >
+    Demander une démo
+  </Button>
+</div>
+
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
-                  <span className="text-gray-700">Chiffrement AES-256</span>
+                  <CheckCircle className="h-7 w-7 text-teal-600 mr-2" />
+                  <span className="text-gray-200">Chiffrement AES-256</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
-                  <span className="text-gray-700">Conforme RGPD</span>
+                  <span className="text-gray-200">Conforme RGPD</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
-                  <span className="text-gray-700">Support 24/7</span>
+                  <span className="text-gray-200">Support 24/7</span>
                 </div>
               </div>
             </div>
@@ -62,7 +89,7 @@ export const Hero = () => {
               <div className="absolute -bottom-8 -left-20 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
               
               <div className="relative">
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white">
+                <div className="bg-gray-900 rounded-2xl shadow-xl overflow-hidden border-4 border-white">
                   <div className="bg-gray-800 h-12 flex items-center px-4">
                     <div className="flex space-x-2">
                       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -100,7 +127,7 @@ export const Hero = () => {
                   </div>
                 </div>
                 
-                <div className="absolute -right-4 -bottom-8 bg-white rounded-xl shadow-lg p-4 w-40 border border-gray-100 animate-float">
+                <div className="absolute -right-4 -bottom-8 bg-white rounded-xl shadow-lg p-4 w-40 border border-gray-00 animate-float">
                   <div className="flex items-center justify-center w-8 h-8 bg-teal-100 rounded-full mb-2">
                     <Shield className="h-4 w-4 text-teal-600" />
                   </div>

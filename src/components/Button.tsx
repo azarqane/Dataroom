@@ -1,45 +1,46 @@
 import React from 'react';
 
-interface ButtonProps {
-  children: React.ReactNode;
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'outline' | 'text';
   size?: 'sm' | 'md' | 'lg';
-  className?: string;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean; // <-- Ajouté ici
-}
+};
 
 export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   size = 'md',
   className = '',
-  onClick,
-  type = 'button',
-  disabled = false, // <-- Ajouté ici
+  ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles =
+    'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow disabled:opacity-60 disabled:cursor-not-allowed';
 
-  const variantStyles = {
-    primary: 'bg-teal-600 hover:bg-teal-700 focus:ring-teal-500 text-white shadow-sm',
-    secondary: 'bg-blue-900 hover:bg-blue-950 focus:ring-blue-800 text-white shadow-sm',
-    outline: 'border border-gray-300 hover:bg-gray-50 focus:ring-teal-500 text-gray-700',
-    text: 'hover:bg-gray-100 focus:ring-teal-500 text-gray-700',
+  const variantStyles: Record<string, string> = {
+    primary:
+      'bg-gradient-to-tr from-teal-600 to-teal-400 text-white hover:brightness-110 hover:scale-105 focus:ring-teal-500 border-0',
+    secondary:
+      'border-2 border-teal-400 bg-transparent text-teal-300 hover:bg-teal-900/20 hover:text-white hover:border-teal-300 focus:ring-teal-400',
+    outline:
+      'border-2 border-gray-600 bg-transparent text-gray-200 hover:bg-gray-800 hover:text-teal-300 focus:ring-teal-500',
+    text:
+      'bg-transparent text-teal-400 hover:text-white font-semibold focus:ring-teal-400',
   };
 
-  const sizeStyles = {
+  const sizeStyles: Record<string, string> = {
     sm: 'text-sm px-3 py-1.5',
     md: 'text-base px-4 py-2',
-    lg: 'text-lg px-6 py-3',
+    lg: 'text-lg px-8 py-3',
   };
 
   return (
     <button
-      type={type}
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      onClick={onClick}
-      disabled={disabled} // <-- Ajouté ici
+      className={[
+        baseStyles,
+        variantStyles[variant],
+        sizeStyles[size],
+        className,
+      ].join(' ')}
+      {...props}
     >
       {children}
     </button>

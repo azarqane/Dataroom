@@ -12,9 +12,13 @@ const Logo: React.FC<LogoProps> = ({
   textSize = "text-3xl",
   className = "",
 }) => (
-  <div className={`flex items-center ${className}`}>
-    <Shield style={{ width: size, height: size }} className="text-teal-600" />
-    <span className={`ml-3 font-bold text-gray-900 ${textSize}`}>NeutVault</span>
+  <div className={`flex items-center space-x-2 ${className}`}>
+    {/* Bouclier turquoise (teal-400) */}
+    <Shield size={size} className="text-teal-400" />
+    {/* Texte blanc (ou gris très clair) */}
+    <span className={`${textSize} font-extrabold text-gray-200 tracking-tight select-none`}>
+      NeutVault
+    </span>
   </div>
 );
 

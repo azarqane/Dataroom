@@ -76,7 +76,7 @@ export const Security = () => {
       
       {/* Bandeau turquoise moderne */}
       <div className="w-full flex justify-center mb-16">
-        <span className="inline-block px-8 py-2 rounded-full bg-gradient-to-r from-teal-500 via-teal-400 to-teal-600 text-white text-lg font-bold shadow-xl tracking-wide drop-shadow-lg backdrop-blur">
+        <span className="text-3xl md:text-4xl font-extrabold text-teal-400 mb-2 tracking-tight">
           Sécurité & conformité
         </span>
       </div>

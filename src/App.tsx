@@ -38,15 +38,16 @@ function AppWrapper() {
       <Routes>
         <Route path="/access/:token" element={<AccessDataRoom />} />
         <Route path="/" element={
-          <main>
-            <Hero />
-            <Features />
-            <Security />
-            <Testimonials />
-            <Pricing />
-            <FAQ />
-          </main>
-        } />
+  <main>
+    <section id="hero"><Hero /></section>
+    <section id="features"><Features /></section>
+    <section id="security"><Security /></section>
+    <section id="Testimonials" className="scroll-mt-24"><Testimonials /></section>
+    <section id="pricing"><Pricing /></section>
+    <section id="faq"><FAQ /></section>
+  </main>
+} />
+
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dataroom/:id" element={<DataRoomPage />} />

@@ -1,44 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Shield, ChevronDown } from 'lucide-react';
-import { Button } from './Button';
-import { Link } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Logo from "./Logo";
+import { Menu, X } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { SignupButton } from "./SignupButton";
+import { Modal } from "./Modal";
+import { SignupForm } from "./SignupForm";
+
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
-
-    document.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      document.removeEventListener('scroll', handleScroll);
-    };
-  }, [scrolled]);
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const handleNavigation = (sectionId: string) => {
-    // Si on est sur une autre page que la landing
     if (location.pathname !== '/') {
       navigate(`/#${sectionId}`);
+      setIsOpen(false);
       return;
     }
-  
-    // Sinon on est déjà sur la landing : scroll en douceur
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = 100;
+      const offset = 80; // Ajuste si navbar plus haute
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-  
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
@@ -47,136 +39,153 @@ export const Navbar = () => {
     }
   };
 
+  // ----------- Menu à jour : sections réelles de ta landing -------------
+  const navLinks = [
+    
+    { label: 'Fonctionnalités', section: 'features' },
+    { label: 'Sécurité', section: 'security' },
+    { label: 'Tarifs', section: 'pricing' },
+    { label: 'Témoignages', section: 'Testimonials' },
+    { label: 'FAQ', section: 'faq' },
+  ];
+
+  function handleSignup(formData: any) {
+    setSignupLoading(true);
+    setTimeout(() => {
+      setSignupLoading(false);
+      setSignupOpen(false);
+    }, 1800);
+  }
+
+  // Bouton Se connecter
+  const loginBtnClass =
+    "border border-teal-500 text-teal-600 hover:bg-teal-50 font-bold px-6 py-2 rounded-full transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-300";
+
+  // Styles dynamiques pour logo et texte
+  const logoTextClass = scrolled ? "text-white" : "text-gray-900";
+  const logoIconStroke = scrolled ? "#fff" : "#14b8a6";
+
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-md py-3' : 'bg-white/80 backdrop-blur-sm py-5'
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all ${
+        scrolled
+          ? 'bg-gray-900/90 shadow-xl backdrop-blur border-b border-gray-800'
+          : 'bg-transparent'
       }`}
+      role="navigation"
+      aria-label="Navigation principale"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-          <div
-  onClick={() => {
-    if (location.pathname === '/') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/');
-    }
-  }}
-  className="cursor-pointer flex items-center flex-shrink-0 mr-10 group"
->
-  <Logo size={32} textSize="text-xl" />
-          </div>
-
-            <nav className="hidden md:flex space-x-8">
-              <button onClick={() => handleNavigation('features')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-                Fonctionnalités
-              </button>
-              <button onClick={() => handleNavigation('security')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-                Sécurité
-              </button>
-              <div className="relative group">
-                <button className="flex items-center space-x-1 text-gray-700 hover:text-teal-600 font-medium transition-colors">
-                  <span>Cas d'usage</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                <div className="absolute left-0 w-64 mt-2 bg-white rounded-xl shadow-lg py-3 z-10 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200 transform origin-top-left">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Professions juridiques & financières</span>
-                  </div>
-                  <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors">
-                    Avocats
-                  </button>
-                  <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors">
-                    Experts-comptables
-                  </button>
-                  
-                  <div className="px-4 py-2 border-b border-gray-100 mt-2">
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Créatifs & Design</span>
-                  </div>
-                  <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors">
-                    Architectes
-                  </button>
-                  <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors">
-                    Designers
-                  </button>
-                </div>
-              </div>
-              <button onClick={() => handleNavigation('pricing')} className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-                Tarifs
-              </button>
-            </nav>
-          </div>
-          <div className="hidden md:flex items-center space-x-4">
-          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium transition-colors">
-            Connexion
-          </Link>
-
-
-            <Button variant="primary" onClick={() => handleNavigation('trial')}>Essai gratuit</Button>
-          </div>
-          <div className="md:hidden">
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-              className="p-2 rounded-md text-gray-700 hover:text-teal-600 focus:outline-none"
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        {/* Logo + NeutVault bien alignés */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 group"
+          style={{ minHeight: 40 }}
+          aria-label="Accueil NeutVault"
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 38,
+              width: 38,
+              minWidth: 38,
+              minHeight: 38,
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width={32}
+              height={32}
+              fill="none"
+              stroke={logoIconStroke}
+              strokeWidth={2.1}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ display: "block", margin: "auto" }}
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </span>
+          <span
+            className={`font-extrabold font-sans ${logoTextClass}`}
+            style={{
+              fontSize: "1.35rem",
+              letterSpacing: ".01em",
+              lineHeight: 1.15,
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            NeutVault
+          </span>
+        </Link>
+
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-5">
+          {navLinks.map(link => (
+            <button
+              key={link.section}
+              onClick={() => handleNavigation(link.section)}
+              className={
+                (scrolled
+                  ? "text-gray-100 hover:text-teal-400"
+                  : "text-gray-900 hover:text-teal-600"
+                ) +
+                " font-medium transition-colors px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+              }
+            >
+              {link.label}
             </button>
+          ))}
+          <div className="flex items-center gap-3 ml-6">
+            <Link to="/auth">
+              <button className={loginBtnClass} type="button">
+                Se connecter
+              </button>
+            </Link>
+            <SignupButton onClick={() => setSignupOpen(true)} />
           </div>
         </div>
+
+        {/* Mobile burger */}
+        <button
+          className="md:hidden flex items-center justify-center p-2 rounded-lg bg-gray-800 text-teal-400 hover:bg-teal-700 transition"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
-      
+
       {/* Mobile menu */}
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="bg-white shadow-lg rounded-b-lg px-4 pt-2 pb-4 space-y-2">
-          <button onClick={() => handleNavigation('features')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-            Fonctionnalités
-          </button>
-          <button onClick={() => handleNavigation('security')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-            Sécurité
-          </button>
-          
-          <div className="py-2">
-            <div className="px-3 py-2 text-sm font-medium text-gray-500">Cas d'usage</div>
-            <div className="pl-6 space-y-2">
-              <div className="py-2">
-                <div className="text-xs font-semibold text-gray-500 uppercase px-3 mb-1">Professions juridiques & financières</div>
-                <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-                  Avocats
-                </button>
-                <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-                  Experts-comptables
-                </button>
-              </div>
-              <div className="py-2">
-                <div className="text-xs font-semibold text-gray-500 uppercase px-3 mb-1">Créatifs & Design</div>
-                <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-                  Architectes
-                </button>
-                <button onClick={() => handleNavigation('solutions')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-                  Designers
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <button onClick={() => handleNavigation('pricing')} className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-teal-600 font-medium transition-colors">
-            Tarifs
-          </button>
-          <div className="pt-4 border-t border-gray-200 flex flex-col space-y-3">
-          <Link to="/auth" className="text-gray-700 hover:text-teal-600 font-medium px-3 py-2 rounded-md">
-            Connexion
-          </Link>
-
-
-            <Button variant="primary" className="w-full" onClick={() => handleNavigation('trial')}>
-              Essai gratuit
-            </Button>
+      {isOpen && (
+        <div className="md:hidden bg-gray-900 w-full px-4 pb-4 pt-2 shadow-xl border-b border-gray-800 animate-fadeIn">
+          {navLinks.map(link => (
+            <button
+              key={link.section}
+              onClick={() => handleNavigation(link.section)}
+              className="block w-full text-left text-gray-200 py-2 px-2 rounded-lg hover:bg-gray-800 hover:text-teal-400 font-medium transition"
+            >
+              {link.label}
+            </button>
+          ))}
+          <div className="flex flex-col gap-3 mt-4">
+            <Link to="/auth">
+              <button className={loginBtnClass + " w-full"} type="button">
+                Se connecter
+              </button>
+            </Link>
+            <SignupButton onClick={() => setSignupOpen(true)} />
           </div>
         </div>
-      </div>
-    </header>
+      )}
+
+      {/* Modale d'inscription */}
+      <Modal open={signupOpen} onClose={() => setSignupOpen(false)} title="Créer votre compte">
+        <SignupForm onSubmit={handleSignup} loading={signupLoading} />
+      </Modal>
+    </nav>
   );
 };

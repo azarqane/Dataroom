@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer utilities {
   .animate-fadein {
     animation: fadein 0.15s;
@@ -9,6 +9,10 @@
   .animate-popin {
     animation: popin 0.25s cubic-bezier(.17,.67,.83,.67);
   }
+}
+
+.font-arabic {
+  font-family: 'Tajawal', Arial, sans-serif;
 }
 
 @keyframes fadein {

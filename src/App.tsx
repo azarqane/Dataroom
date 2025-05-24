@@ -15,6 +15,8 @@ import DashboardPage from './pages/DashboardPage';
 import { Toaster } from 'react-hot-toast';
 import DataRoomPage from './pages/DataRoomPage';
 import AccessDataRoom from "./pages/access/AccessDataRoom";
+import { useTranslation } from 'react-i18next';
+
 function AppWrapper() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
@@ -38,16 +40,15 @@ function AppWrapper() {
       <Routes>
         <Route path="/access/:token" element={<AccessDataRoom />} />
         <Route path="/" element={
-  <main>
-    <section id="hero"><Hero /></section>
-    <section id="features"><Features /></section>
-    <section id="security"><Security /></section>
-    <section id="Testimonials" className="scroll-mt-24"><Testimonials /></section>
-    <section id="pricing"><Pricing /></section>
-    <section id="faq"><FAQ /></section>
-  </main>
-} />
-
+          <main>
+            <section id="hero"><Hero /></section>
+            <section id="features"><Features /></section>
+            <section id="security"><Security /></section>
+            <section id="Testimonials" className="scroll-mt-24"><Testimonials /></section>
+            <section id="pricing"><Pricing /></section>
+            <section id="faq"><FAQ /></section>
+          </main>
+        } />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dataroom/:id" element={<DataRoomPage />} />
@@ -55,28 +56,41 @@ function AppWrapper() {
       {isLanding && <Footer />}
       <ScrollToTop />
       <Toaster
-  position="top-center"  // ou "bottom-center", "top-left", etc.
-  toastOptions={{
-    duration: 4000,
-    style: {
-      fontSize: '1.1rem',
-      fontWeight: 'bold',
-      background: '#14b8a6',
-      color: '#fff',
-      borderRadius: '1rem',
-      boxShadow: '0 4px 32px 0 rgb(0 0 0 / 10%)',
-    },
-    iconTheme: {
-      primary: "#fff",
-      secondary: "#14b8a6"
-    }
-  }}
-/>
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            background: '#14b8a6',
+            color: '#fff',
+            borderRadius: '1rem',
+            boxShadow: '0 4px 32px 0 rgb(0 0 0 / 10%)',
+          },
+          iconTheme: {
+            primary: "#fff",
+            secondary: "#14b8a6"
+          }
+        }}
+      />
     </div>
   );
 }
 
 function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (i18n.language === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.body.classList.add('font-arabic');
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.body.classList.remove('font-arabic');
+    }
+  }, [i18n.language]);
+
+  // *** C’est ici qu’il faut retourner l’app ***
   return (
     <Router>
       <AppWrapper />

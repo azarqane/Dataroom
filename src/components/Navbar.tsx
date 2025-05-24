@@ -4,12 +4,21 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SignupButton } from "./SignupButton";
 import { Modal } from "./Modal";
 import { SignupForm } from "./SignupForm";
+import { useTranslation } from "react-i18next";
+
+const languages = [
+  { code: "fr", label: "FR" },
+  { code: "en", label: "EN" },
+  { code: "ar", label: "AR" }
+];
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -28,7 +37,7 @@ export const Navbar = () => {
     }
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = 72; // Navbar plus raisonnable !
+      const offset = 72;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       window.scrollTo({
@@ -40,12 +49,11 @@ export const Navbar = () => {
   };
 
   const navLinks = [
-    
-    { label: 'Fonctionnalités', section: 'features' },
-    { label: 'Sécurité', section: 'security' },
-    { label: 'Tarifs', section: 'pricing' },
-    { label: 'Témoignages', section: 'Testimonials' },
-    { label: 'FAQ', section: 'faq' },
+    { label: t('features'), section: 'features' },
+    { label: t('security'), section: 'security' },
+    { label: t('pricing'), section: 'pricing' },
+    { label: t('testimonials'), section: 'Testimonials' },
+    { label: t('faq'), section: 'faq' },
   ];
 
   const loginBtnClass =
@@ -53,15 +61,15 @@ export const Navbar = () => {
 
   const logoTextClass = scrolled ? "text-white" : "text-gray-900";
   const logoIconStroke = scrolled ? "#fff" : "#14b8a6";
+
   function handleSignup(formData: any) {
-  // Ici tu peux mettre la logique réelle d’inscription, ou juste fermer la modale par exemple :
-  setSignupLoading(true);
-  setTimeout(() => {
-    setSignupLoading(false);
-    setSignupOpen(false);
-    // Tu peux mettre ici un toast ou une action supplémentaire
-  }, 1500);
-}
+    setSignupLoading(true);
+    setTimeout(() => {
+      setSignupLoading(false);
+      setSignupOpen(false);
+      // Tu peux mettre ici un toast ou une action supplémentaire
+    }, 1500);
+  }
 
   return (
     <nav
@@ -70,7 +78,7 @@ export const Navbar = () => {
           ? 'bg-gray-900/90 shadow-xl backdrop-blur border-b border-gray-800'
           : 'bg-transparent'
       }`}
-      style={{ minHeight: 64 }} // NAVBAR MOINS HAUTE
+      style={{ minHeight: 64 }}
       role="navigation"
       aria-label="Navigation principale"
     >
@@ -142,70 +150,102 @@ export const Navbar = () => {
           <div className="flex items-center gap-3 ml-6">
             <Link to="/auth">
               <button className={loginBtnClass} type="button">
-                Se connecter
+                {t("login")}
               </button>
             </Link>
             <SignupButton onClick={() => setSignupOpen(true)} />
+          </div>
+          {/* LANGUAGES SELECTOR */}
+          <div className="flex gap-1 ml-6">
+            {languages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => i18n.changeLanguage(lang.code)}
+                className={`px-2 py-1 rounded font-bold transition-all ${
+                  i18n.language === lang.code
+                    ? "bg-teal-600 text-white shadow"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                aria-current={i18n.language === lang.code ? "page" : undefined}
+              >
+                {lang.label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Mobile burger */}
         <button
-  className={
-    "md:hidden flex items-center justify-center p-2 rounded-lg transition shadow " +
-    (scrolled
-      ? "bg-gray-800 text-teal-400 hover:bg-teal-700"
-      : "bg-white text-teal-500 hover:bg-teal-100 border border-gray-200")
-  }
-  style={{ fontSize: 22 }}
-  onClick={() => setIsOpen(!isOpen)}
-  aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
->
-  {isOpen ? <X size={24} /> : <Menu size={24} />}
-</button>
-
+          className={
+            "md:hidden flex items-center justify-center p-2 rounded-lg transition shadow " +
+            (scrolled
+              ? "bg-gray-800 text-teal-400 hover:bg-teal-700"
+              : "bg-white text-teal-500 hover:bg-teal-100 border border-gray-200")
+          }
+          style={{ fontSize: 22 }}
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile menu */}
       {isOpen && (
-  <div
-    className={
-      "md:hidden w-full px-4 pb-4 pt-2 shadow-xl border-b border-gray-200 animate-fadeIn " +
-      (scrolled ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200")
-    }
-  >
-    {navLinks.map(link => (
-      <button
-        key={link.section}
-        onClick={() => handleNavigation(link.section)}
-        className={
-          (scrolled
-            ? "text-gray-100 hover:text-teal-400"
-            : "text-gray-900 hover:text-teal-600"
-          ) +
-          " block w-full text-left py-3 px-3 rounded-lg font-semibold text-base transition"
-        }
-        style={{ fontSize: "1.05rem" }}
-      >
-        {link.label}
-      </button>
-    ))}
-    <div className="flex flex-col gap-3 mt-4">
-      <Link to="/auth">
-        <button className={loginBtnClass + " w-full"} type="button">
-          Se connecter
-        </button>
-      </Link>
-      <SignupButton onClick={() => setSignupOpen(true)} />
-    </div>
-  </div>
-)}
+        <div
+          className={
+            "md:hidden w-full px-4 pb-4 pt-2 shadow-xl border-b border-gray-200 animate-fadeIn " +
+            (scrolled ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200")
+          }
+        >
+          {navLinks.map(link => (
+            <button
+              key={link.section}
+              onClick={() => handleNavigation(link.section)}
+              className={
+                (scrolled
+                  ? "text-gray-100 hover:text-teal-400"
+                  : "text-gray-900 hover:text-teal-600"
+                ) +
+                " block w-full text-left py-3 px-3 rounded-lg font-semibold text-base transition"
+              }
+              style={{ fontSize: "1.05rem" }}
+            >
+              {link.label}
+            </button>
+          ))}
+          <div className="flex flex-col gap-3 mt-4">
+            <Link to="/auth">
+              <button className={loginBtnClass + " w-full"} type="button">
+                {t("login")}
+              </button>
+            </Link>
+            <SignupButton onClick={() => setSignupOpen(true)} />
+          </div>
+          {/* LANGUAGES SELECTOR MOBILE */}
+          <div className="flex gap-1 mt-4">
+            {languages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => i18n.changeLanguage(lang.code)}
+                className={`px-2 py-1 rounded font-bold transition-all ${
+                  i18n.language === lang.code
+                    ? "bg-teal-600 text-white shadow"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                aria-current={i18n.language === lang.code ? "page" : undefined}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modale d'inscription */}
       <Modal open={signupOpen} onClose={() => setSignupOpen(false)} title="">
-  <SignupForm onSubmit={handleSignup} loading={signupLoading} onClose={() => setSignupOpen(false)} />
-</Modal>
-
+        <SignupForm onSubmit={handleSignup} loading={signupLoading} onClose={() => setSignupOpen(false)} />
+      </Modal>
     </nav>
   );
 };

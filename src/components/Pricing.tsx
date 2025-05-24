@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Mail, Phone, Send, Check, HelpCircle, Shield, D
 import { Button } from './Button';
 import { useNavigate } from 'react-router-dom';
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PlanFeature {
   text: string;
@@ -24,88 +25,105 @@ interface Plan {
 
 export const Pricing = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [annual, setAnnual] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-    subject: 'general'
-  });
 
+  // Si arabe, on utilise MAD, sinon EUR
+  const isAr = i18n.language === 'ar';
+
+  // Les plans (prix restent en nombre, seul l'affichage change)
   const plans: Plan[] = [
     {
-      name: "Offre Start",
-      description: "Pour les freelances, indépendants et petits projets",
-      monthlyPrice: 49,
-      yearlyPrice: 490, // 2 mois offerts
+      name: t("pricing_plan1_name"),
+      description: t("pricing_plan1_desc"),
+      monthlyPrice: isAr ? 490 : 49,
+      yearlyPrice: isAr ? 4900 : 490, // Exemple : prix *10 pour MAD (à ajuster selon ta politique !)
       icon: <Database className="h-6 w-6 text-gray-500" />,
       highlights: [
-        "1 Data Room active",
-        "10 Go de stockage sécurisé",
-        "Jusqu'à 2 administrateurs",
+        t("pricing_plan1_highlight1"),
+        t("pricing_plan1_highlight2"),
+        t("pricing_plan1_highlight3"),
       ],
       features: [
-        { text: "Support email standard (jours ouvrés)", available: true },
-        { text: "Essai gratuit 14 jours sans carte bancaire", available: true },
-        { text: "Rapports d'activité simples (accès récents)", available: true },
-        { text: "Journalisation blockchain", available: false },
-        { text: "Filigrane personnalisé", available: false },
-        { text: "Support prioritaire", available: false },
+        { text: t("pricing_plan1_feature1"), available: true },
+        { text: t("pricing_plan1_feature2"), available: true },
+        { text: t("pricing_plan1_feature3"), available: true },
+        { text: t("pricing_plan1_feature4"), available: false },
+        { text: t("pricing_plan1_feature5"), available: false },
+        { text: t("pricing_plan1_feature6"), available: false },
       ],
-      cta: "Commencer l'essai",
+      cta: t("pricing_plan1_cta"),
     },
     {
-      name: "Offre Essentielle",
+      name: t("pricing_plan2_name"),
       popular: true,
-      description: "Pour les indépendants, petites équipes, professions libérales",
-      monthlyPrice: 99,
-      yearlyPrice: 990, // 2 mois offerts
+      description: t("pricing_plan2_desc"),
+      monthlyPrice: isAr ? 990 : 99,
+      yearlyPrice: isAr ? 9900 : 990,
       icon: <Database className="h-6 w-6 text-blue-600" />,
       highlights: [
-        "10 Data Rooms actives",
-        "50 Go de stockage sécurisé",
-        "Jusqu'à 5 administrateurs",
+        t("pricing_plan2_highlight1"),
+        t("pricing_plan2_highlight2"),
+        t("pricing_plan2_highlight3"),
       ],
       features: [
-        { text: "Journalisation blockchain des accès", available: true },
-        { text: "Filigrane dynamique anti-capture d'écran", available: true },
-        { text: "Support email local (9h-18h, jours ouvrés)", available: true },
-        { text: "Essai gratuit 14 jours sans carte bancaire", available: true },
-        { text: "Rapports d'activité basiques", available: false },
-        { text: "Support prioritaire", available: false },
+        { text: t("pricing_plan2_feature1"), available: true },
+        { text: t("pricing_plan2_feature2"), available: true },
+        { text: t("pricing_plan2_feature3"), available: true },
+        { text: t("pricing_plan2_feature4"), available: true },
+        { text: t("pricing_plan2_feature5"), available: false },
+        { text: t("pricing_plan2_feature6"), available: false },
       ],
-      cta: "Souscrire maintenant",
+      cta: t("pricing_plan2_cta"),
     },
     {
-      name: "Offre Business",
-      description: "Pour bureaux d'études, cabinets d'architectes, groupes multi-sites",
-      monthlyPrice: 249,
-      yearlyPrice: 2490,
+      name: t("pricing_plan3_name"),
+      description: t("pricing_plan3_desc"),
+      monthlyPrice: isAr ? 2490 : 249,
+      yearlyPrice: isAr ? 24900 : 2490,
       icon: <Shield className="h-6 w-6 text-purple-600" />,
       highlights: [
-        "Data Rooms illimitées",
-        "500 Go de stockage sécurisé",
-        "Jusqu'à 30 administrateurs",
+        t("pricing_plan3_highlight1"),
+        t("pricing_plan3_highlight2"),
+        t("pricing_plan3_highlight3"),
       ],
       features: [
-        { text: "Visualiseur sécurisé (plans, PDF, CAO)", available: true },
-        { text: "Anti-capture d'écran et verrouillage export", available: true },
-        { text: "Watermarking personnalisé", available: true },
-        { text: "Archivage légal 10 ans", available: true },
-        { text: "Support premium 24/7 dédié", available: true },
-        { text: "Rapports d'activité avancés", available: true },
+        { text: t("pricing_plan3_feature1"), available: true },
+        { text: t("pricing_plan3_feature2"), available: true },
+        { text: t("pricing_plan3_feature3"), available: true },
+        { text: t("pricing_plan3_feature4"), available: true },
+        { text: t("pricing_plan3_feature5"), available: true },
+        { text: t("pricing_plan3_feature6"), available: true },
       ],
-      cta: "Souscrire maintenant",
+      cta: t("pricing_plan3_cta"),
     },
   ];
+
+  // Fonction pour afficher le prix au bon format
+  const formatPrice = (price: number, perYear: boolean) => {
+    if (isAr) {
+      return (
+        <>
+          <span className="text-4xl font-bold text-gray-900">{price} د.م</span>
+          <span className="text-gray-500 ml-2 pb-1">{perYear ? '/سنة' : '/شهر'}</span>
+        </>
+      );
+    }
+    return (
+      <>
+        <span className="text-4xl font-bold text-gray-900">{price}€</span>
+        <span className="text-gray-500 ml-2 pb-1">{perYear ? '/an' : '/mois'}</span>
+      </>
+    );
+  };
 
   return (
     <section className="py-20" id="pricing">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Des forfaits adaptés à vos besoins</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("pricing_title")}</h2>
           <p className="text-xl text-gray-600 mb-8">
-            Choisissez le plan qui correspond à votre utilisation des Data Rooms.
+            {t("pricing_subtitle")}
           </p>
           <div className="flex items-center justify-center mb-8">
             <div className="bg-gray-100 p-1 rounded-full inline-flex">
@@ -116,7 +134,7 @@ export const Pricing = () => {
                 }`}
                 aria-pressed={!annual}
               >
-                Mensuel
+                {isAr ? 'شهري' : 'Mensuel'}
               </button>
               <button
                 onClick={() => setAnnual(true)}
@@ -125,7 +143,7 @@ export const Pricing = () => {
                 }`}
                 aria-pressed={annual}
               >
-                Annuel <span className="text-teal-600 font-semibold">(2 mois offerts)</span>
+                {isAr ? 'سنوي' : 'Annuel'} <span className="text-teal-600 font-semibold">{isAr ? '(شهران مجانا)' : '(2 mois offerts)'}</span>
               </button>
             </div>
           </div>
@@ -142,14 +160,14 @@ export const Pricing = () => {
             >
               {plan.popular && (
                 <div className="absolute top-0 left-0 right-0 bg-teal-600 text-white text-center text-sm font-medium py-1">
-                  Le plus populaire
+                  {t("pricing_most_popular")}
                 </div>
               )}
 
               <div className={`bg-white p-8 ${plan.popular ? 'pt-10' : ''}`}>
                 <div className="flex items-center mb-4">
                   <div
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center mr-4 ${
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ml-4 ${
                       plan.popular ? 'bg-teal-100' : 'bg-gray-100'
                     }`}
                   >
@@ -163,14 +181,14 @@ export const Pricing = () => {
 
                 <div className="my-6">
                   <div className="flex items-end">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {annual ? plan.yearlyPrice : plan.monthlyPrice}€
-                    </span>
-                    <span className="text-gray-500 ml-2 pb-1">{annual ? '/an' : '/mois'}</span>
+                    {formatPrice(annual ? plan.yearlyPrice : plan.monthlyPrice, annual)}
                   </div>
                   {annual && (
                     <p className="text-sm text-gray-500 mt-1">
-                      soit {Math.round(plan.yearlyPrice / 12)}€ par mois, facturé annuellement
+                      {isAr
+                        ? `يعادل تقريبًا ${Math.round(plan.yearlyPrice / 12)} د.م/شهر، تدفع سنويًا`
+                        : `soit ${Math.round(plan.yearlyPrice / 12)}€ par mois, facturé annuellement`
+                      }
                     </p>
                   )}
                 </div>
@@ -178,7 +196,7 @@ export const Pricing = () => {
                 <div className="bg-gray-50 rounded-xl p-4 mb-6">
                   {plan.highlights.map((highlight, idx) => (
                     <div key={idx} className="flex items-center text-gray-700 mb-2 last:mb-0">
-                      <Check className="h-5 w-5 text-teal-600 mr-2" />
+                      <Check className="h-5 w-5 text-teal-600 ml-2" />
                       <span className="font-medium">{highlight}</span>
                     </div>
                   ))}
@@ -226,35 +244,35 @@ export const Pricing = () => {
         <div className="mt-16 max-w-4xl mx-auto bg-gray-50 rounded-2xl p-8 border border-gray-200">
           <div className="flex flex-col md:flex-row items-center">
             <div className="w-full md:w-2/3 mb-6 md:mb-0">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Besoin d'une solution sur mesure ?</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("pricing_contact_title")}</h3>
               <p className="text-gray-600">
-                Contactez notre équipe commerciale pour discuter de vos besoins spécifiques en matière de Data Rooms.
+                {t("pricing_contact_desc")}
               </p>
             </div>
             <div className="w-full md:w-1/3 md:text-right">
               <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
-                <Button variant="secondary">Contactez-nous</Button>
+                <Button variant="secondary">{t("pricing_contact_cta")}</Button>
               </a>
             </div>
           </div>
 
           <div className="mt-8 pt-8 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex flex-col items-center md:items-start">
-              <div className="text-lg font-semibold text-gray-900 mb-1">Data Rooms flexibles</div>
+              <div className="text-lg font-semibold text-gray-900 mb-1">{t("pricing_info1_title")}</div>
               <p className="text-gray-600 text-sm text-center md:text-left">
-                Créez et gérez vos Data Rooms selon vos besoins.
+                {t("pricing_info1_desc")}
               </p>
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <div className="text-lg font-semibold text-gray-900 mb-1">Stockage évolutif</div>
+              <div className="text-lg font-semibold text-gray-900 mb-1">{t("pricing_info2_title")}</div>
               <p className="text-gray-600 text-sm text-center md:text-left">
-                Augmentez votre capacité de stockage à la demande.
+                {t("pricing_info2_desc")}
               </p>
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <div className="text-lg font-semibold text-gray-900 mb-1">Contrôle granulaire</div>
+              <div className="text-lg font-semibold text-gray-900 mb-1">{t("pricing_info3_title")}</div>
               <p className="text-gray-600 text-sm text-center md:text-left">
-                Gérez les accès et permissions en détail.
+                {t("pricing_info3_desc")}
               </p>
             </div>
           </div>

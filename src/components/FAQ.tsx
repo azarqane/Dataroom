@@ -1,78 +1,55 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Mail, Phone, Send } from 'lucide-react';
 import { Button } from './Button';
+import { useTranslation } from 'react-i18next';
 
 interface FAQItem {
   question: string;
   answer: string;
 }
 
-const FAQItems: FAQItem[] = [
-  {
-    question: "Qu'est-ce qu'une Data Room et pourquoi en ai-je besoin ?",
-    answer: "Une Data Room est un espace numérique sécurisé permettant le partage et le stockage de documents confidentiels. Elle est essentielle pour les transactions sensibles comme les fusions-acquisitions, levées de fonds, due diligence, ou le partage de documents juridiques et financiers nécessitant une sécurité renforcée."
-  },
-  {
-    question: "Comment NeutVault assure-t-il la sécurité de mes données ?",
-    answer: "NeutVault utilise un chiffrement AES-256 bits de bout en bout, une authentification multifacteur, un contrôle d'accès granulaire, des filigranes dynamiques, et des journaux d'audit complets. Nos centres de données sont certifiés ISO 27001 et notre solution est conforme au RGPD et autres réglementations internationales."
-  },
-  {
-    question: "Puis-je personnaliser les permissions pour différents utilisateurs ?",
-    answer: "Absolument. NeutVault vous permet de définir des permissions précises par utilisateur ou groupe d'utilisateurs, en contrôlant ce qu'ils peuvent voir, télécharger, imprimer ou modifier. Vous pouvez également définir des restrictions temporelles pour limiter l'accès dans le temps."
-  },
-  {
-    question: "La plateforme est-elle conforme au RGPD ?",
-    answer: "Oui, NeutVault est entièrement conforme au Règlement Général sur la Protection des Données (RGPD). Nous stockons vos données dans des centres de données situés dans l'Union Européenne et mettons en œuvre toutes les mesures techniques et organisationnelles requises par cette réglementation."
-  },
-  {
-    question: "Combien de temps dure la période d'essai gratuit ?",
-    answer: "Nous offrons une période d'essai gratuit de 14 jours pour tous nos forfaits. Durant cette période, vous avez accès à toutes les fonctionnalités du plan choisi sans engagement. Si vous décidez de ne pas continuer, aucun frais ne vous sera facturé."
-  },
-  {
-    question: "Comment fonctionne le support client ?",
-    answer: "Selon votre forfait, vous bénéficiez d'un support par email, téléphone ou d'un gestionnaire de compte dédié. Le forfait Enterprise inclut un support 24/7. Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous aider à résoudre rapidement tout problème."
-  },
-  
-  {
-    question: "Que se passe-t-il si je change de forfait ?",
-    answer: "Vous pouvez facilement passer à un forfait supérieur à tout moment, et les changements prendront effet immédiatement. Si vous souhaitez passer à un forfait inférieur, le changement sera effectif à la fin de votre période de facturation en cours."
-  }
-];
-
-interface FAQItemProps {
-  item: FAQItem;
-  isOpen: boolean;
-  toggleItem: () => void;
-}
-
-const FAQItem: React.FC<FAQItemProps> = ({ item, isOpen, toggleItem }) => {
-  return (
-    <div className="border-b border-gray-200 py-5">
-      <button
-        onClick={toggleItem}
-        className="flex justify-between items-center w-full text-left focus:outline-none"
-      >
-        <span className="text-lg font-medium text-gray-900">{item.question}</span>
-        <span className="ml-6 flex-shrink-0 text-gray-500">
-          {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </span>
-      </button>
-      <div className={`mt-2 transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <p className="text-base text-gray-600">{item.answer}</p>
-      </div>
-    </div>
-  );
-};
-
 export const FAQ = () => {
-  const [openItems, setOpenItems] = useState<number[]>([0]);
+  const { t, i18n } = useTranslation();
+  const [openItems, setOpenItems] = useState<number[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: '',
     subject: 'general'
   });
-  
+
+  // Questions/réponses multilingues depuis la traduction
+  const FAQItems: FAQItem[] = [
+    {
+      question: t('faq_q1'),
+      answer: t('faq_a1')
+    },
+    {
+      question: t('faq_q2'),
+      answer: t('faq_a2')
+    },
+    {
+      question: t('faq_q3'),
+      answer: t('faq_a3')
+    },
+    {
+      question: t('faq_q4'),
+      answer: t('faq_a4')
+    },
+    {
+      question: t('faq_q5'),
+      answer: t('faq_a5')
+    },
+    {
+      question: t('faq_q6'),
+      answer: t('faq_a6')
+    },
+    {
+      question: t('faq_q7'),
+      answer: t('faq_a7')
+    }
+  ];
+
   const toggleItem = (index: number) => {
     setOpenItems(openItems.includes(index)
       ? openItems.filter(i => i !== index)
@@ -90,9 +67,8 @@ export const FAQ = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
+    // Ici, tu pourrais envoyer le formulaire à un backend
     console.log('Form submitted:', formData);
-    // Reset form
     setFormData({
       name: '',
       email: '',
@@ -105,28 +81,36 @@ export const FAQ = () => {
     <section className="py-20 bg-gray-50" id="faq">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Questions fréquentes</h2>
-          <p className="text-xl text-gray-600">
-            Vous avez des questions ? Nous avons des réponses.
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("faq_title")}</h2>
+          <p className="text-xl text-gray-600">{t("faq_subtitle")}</p>
         </div>
         
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-6 lg:p-8">
-          <div className="divide-y divide-gray-200">
+          <div className="divide-gray-200">
             {FAQItems.map((item, index) => (
-              <FAQItem
-                key={index}
-                item={item}
-                isOpen={openItems.includes(index)}
-                toggleItem={() => toggleItem(index)}
-              />
+              <div className="border-b border-gray-200 py-5" key={index}>
+                <button
+                  onClick={() => toggleItem(index)}
+                  className="flex justify-between items-center w-full text-left focus:outline-none"
+                >
+                  <span className="text-lg font-medium text-gray-900">{item.question}</span>
+                  <span className="ml-6 flex-shrink-0 text-gray-500">
+                    {openItems.includes(index)
+                      ? <ChevronUp className="h-5 w-5" />
+                      : <ChevronDown className="h-5 w-5" />}
+                  </span>
+                </button>
+                <div className={`mt-2 transition-all duration-300 ease-in-out overflow-hidden ${openItems.includes(index) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <p className="text-base text-gray-600">{item.answer}</p>
+                </div>
+              </div>
             ))}
           </div>
           
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-            <p className="text-gray-600 mb-4">Vous ne trouvez pas la réponse à votre question ?</p>
-            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium" >
-              Contactez nous
+            <p className="text-gray-600 mb-4">{t("faq_no_answer")}</p>
+            <a href="#contact" className="text-teal-600 hover:text-teal-700 font-medium">
+              {t("faq_contact_link")}
             </a>
           </div>
         </div>
@@ -136,24 +120,21 @@ export const FAQ = () => {
             <div className="flex flex-col lg:flex-row">
               <div className="w-full lg:w-1/2 p-8 lg:p-12">
                 <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                  Prêt à sécuriser vos données sensibles ?
+                  {t("faq_cta_title")}
                 </h3>
-                <p className="text-blue-100 mb-8">
-                  Rejoignez des milliers d'entreprises qui font confiance à NeutVault pour leurs Data Rooms.
-                </p>
+                <p className="text-blue-100 mb-8">{t("faq_cta_subtitle")}</p>
                 <div className="space-y-4">
                   <button className="w-full bg-white text-blue-900 hover:bg-teal-100 px-6 py-3 rounded-lg font-medium transition-colors">
-                    Démarrer l'essai gratuit
+                    {t("faq_cta_trial")}
                   </button>
-                  
                 </div>
               </div>
               <div className="w-full lg:w-1/2 bg-white p-8 lg:p-12" id="contact">
-                <h4 className="text-xl font-semibold text-gray-900 mb-6">Contactez-nous</h4>
+                <h4 className="text-xl font-semibold text-gray-900 mb-6">{t("faq_contact_title")}</h4>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Nom complet
+                      {t("faq_form_name")}
                     </label>
                     <input
                       type="text"
@@ -167,7 +148,7 @@ export const FAQ = () => {
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                      Email professionnel
+                      {t("faq_form_email")}
                     </label>
                     <input
                       type="email"
@@ -181,7 +162,7 @@ export const FAQ = () => {
                   </div>
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-                      Sujet
+                      {t("faq_form_subject")}
                     </label>
                     <select
                       id="subject"
@@ -190,15 +171,15 @@ export const FAQ = () => {
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     >
-                      <option value="general">Question générale</option>
-                      <option value="sales">Commercial</option>
-                      <option value="support">Support technique</option>
-                      <option value="partnership">Partenariat</option>
+                      <option value="general">{t("faq_form_subject_general")}</option>
+                      <option value="sales">{t("faq_form_subject_sales")}</option>
+                      <option value="support">{t("faq_form_subject_support")}</option>
+                      <option value="partnership">{t("faq_form_subject_partnership")}</option>
                     </select>
                   </div>
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                      Message
+                      {t("faq_form_message")}
                     </label>
                     <textarea
                       id="message"
@@ -211,19 +192,18 @@ export const FAQ = () => {
                     ></textarea>
                   </div>
                   <Button type="submit" variant="primary" className="w-full">
-                    <Send className="w-4 h-4 mr-2" />
-                    Envoyer le message
+                    <Send className={`w-4 h-4 ${i18n.language === "ar" ? "ml-2" : "mr-2"}`} />
+                    {t("faq_form_send")}
                   </Button>
                 </form>
-
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   <div className="space-y-4">
                     <div className="flex items-center">
-                      <Mail className="h-5 w-5 text-teal-600 mr-3" />
-                      <span className="text-gray-600">contact@neutvault.fr</span>
+                      <Mail className={`h-5 w-5 text-teal-600 ${i18n.language === "ar" ? "ml-3" : "mr-3"}`} />
+                      <span className="text-gray-600">contact@neutvault.com</span>
                     </div>
                     <div className="flex items-center">
-                      <Phone className="h-5 w-5 text-teal-600 mr-3" />
+                      <Phone className={`h-5 w-5 text-teal-600 ${i18n.language === "ar" ? "ml-3" : "mr-3"}`} />
                       <span className="text-gray-600">+33 1 23 45 67 89</span>
                     </div>
                   </div>

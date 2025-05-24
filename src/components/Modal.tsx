@@ -32,26 +32,19 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-lg" }:
   if (!open) return null;
   return (
     <div
-      ref={ref}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadein"
-      onMouseDown={handleOverlayClick}
-      aria-modal="true"
-      tabIndex={-1}
-      role="dialog"
-    >
-      <div
-        className={`bg-white rounded-2xl shadow-2xl p-8 w-full ${maxWidth} animate-popin relative`}
-      >
-        {title && <h2 className="text-2xl font-extrabold text-teal-600 mb-6 text-center">{title}</h2>}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 bg-teal-100 hover:bg-teal-200 text-teal-600 rounded-full p-2 transition"
-          aria-label="Fermer"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 6l8 8M6 14L14 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-        </button>
-        {children}
-      </div>
+  ref={ref}
+  className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadein overflow-y-auto"
+  style={{ minHeight: "100vh" }}
+  onMouseDown={handleOverlayClick}
+  aria-modal="true"
+  tabIndex={-1}
+  role="dialog"
+>
+
+      <div className={`w-full ${maxWidth} relative`}>
+  {title && <h2>...</h2>}
+  {children}
+</div>
     </div>
   );
 }

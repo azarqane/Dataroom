@@ -28,7 +28,7 @@ export const Navbar = () => {
     }
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = 80; // Ajuste si navbar plus haute
+      const offset = 72; // Navbar plus raisonnable !
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       window.scrollTo({
@@ -39,7 +39,6 @@ export const Navbar = () => {
     }
   };
 
-  // ----------- Menu à jour : sections réelles de ta landing -------------
   const navLinks = [
     
     { label: 'Fonctionnalités', section: 'features' },
@@ -49,34 +48,34 @@ export const Navbar = () => {
     { label: 'FAQ', section: 'faq' },
   ];
 
-  function handleSignup(formData: any) {
-    setSignupLoading(true);
-    setTimeout(() => {
-      setSignupLoading(false);
-      setSignupOpen(false);
-    }, 1800);
-  }
-
-  // Bouton Se connecter
   const loginBtnClass =
-    "border border-teal-500 text-teal-600 hover:bg-teal-50 font-bold px-6 py-2 rounded-full transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-300";
+    "border border-teal-500 text-teal-700 bg-white hover:bg-teal-50 font-bold px-5 py-2 rounded-full transition-all shadow focus:outline-none focus:ring-2 focus:ring-teal-300 text-base";
 
-  // Styles dynamiques pour logo et texte
   const logoTextClass = scrolled ? "text-white" : "text-gray-900";
   const logoIconStroke = scrolled ? "#fff" : "#14b8a6";
+  function handleSignup(formData: any) {
+  // Ici tu peux mettre la logique réelle d’inscription, ou juste fermer la modale par exemple :
+  setSignupLoading(true);
+  setTimeout(() => {
+    setSignupLoading(false);
+    setSignupOpen(false);
+    // Tu peux mettre ici un toast ou une action supplémentaire
+  }, 1500);
+}
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all ${
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-200 ${
         scrolled
           ? 'bg-gray-900/90 shadow-xl backdrop-blur border-b border-gray-800'
           : 'bg-transparent'
       }`}
+      style={{ minHeight: 64 }} // NAVBAR MOINS HAUTE
       role="navigation"
       aria-label="Navigation principale"
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Logo + NeutVault bien alignés */}
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between" style={{ minHeight: 64 }}>
+        {/* Logo + NeutVault */}
         <Link
           to="/"
           className="flex items-center gap-2 group"
@@ -88,10 +87,10 @@ export const Navbar = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: 38,
-              width: 38,
-              minWidth: 38,
-              minHeight: 38,
+              height: 32,
+              width: 32,
+              minWidth: 32,
+              minHeight: 32,
             }}
           >
             <svg
@@ -112,9 +111,9 @@ export const Navbar = () => {
           <span
             className={`font-extrabold font-sans ${logoTextClass}`}
             style={{
-              fontSize: "1.35rem",
+              fontSize: "1.4rem",
               letterSpacing: ".01em",
-              lineHeight: 1.15,
+              lineHeight: 1.18,
               fontFamily: "Inter, sans-serif",
             }}
           >
@@ -123,7 +122,7 @@ export const Navbar = () => {
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-5">
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map(link => (
             <button
               key={link.section}
@@ -133,8 +132,9 @@ export const Navbar = () => {
                   ? "text-gray-100 hover:text-teal-400"
                   : "text-gray-900 hover:text-teal-600"
                 ) +
-                " font-medium transition-colors px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+                " font-semibold text-base transition-colors px-3 py-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
               }
+              style={{ fontSize: "1.05rem" }}
             >
               {link.label}
             </button>
@@ -151,41 +151,61 @@ export const Navbar = () => {
 
         {/* Mobile burger */}
         <button
-          className="md:hidden flex items-center justify-center p-2 rounded-lg bg-gray-800 text-teal-400 hover:bg-teal-700 transition"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+  className={
+    "md:hidden flex items-center justify-center p-2 rounded-lg transition shadow " +
+    (scrolled
+      ? "bg-gray-800 text-teal-400 hover:bg-teal-700"
+      : "bg-white text-teal-500 hover:bg-teal-100 border border-gray-200")
+  }
+  style={{ fontSize: 22 }}
+  onClick={() => setIsOpen(!isOpen)}
+  aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+>
+  {isOpen ? <X size={24} /> : <Menu size={24} />}
+</button>
+
       </div>
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-gray-900 w-full px-4 pb-4 pt-2 shadow-xl border-b border-gray-800 animate-fadeIn">
-          {navLinks.map(link => (
-            <button
-              key={link.section}
-              onClick={() => handleNavigation(link.section)}
-              className="block w-full text-left text-gray-200 py-2 px-2 rounded-lg hover:bg-gray-800 hover:text-teal-400 font-medium transition"
-            >
-              {link.label}
-            </button>
-          ))}
-          <div className="flex flex-col gap-3 mt-4">
-            <Link to="/auth">
-              <button className={loginBtnClass + " w-full"} type="button">
-                Se connecter
-              </button>
-            </Link>
-            <SignupButton onClick={() => setSignupOpen(true)} />
-          </div>
-        </div>
-      )}
+  <div
+    className={
+      "md:hidden w-full px-4 pb-4 pt-2 shadow-xl border-b border-gray-200 animate-fadeIn " +
+      (scrolled ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200")
+    }
+  >
+    {navLinks.map(link => (
+      <button
+        key={link.section}
+        onClick={() => handleNavigation(link.section)}
+        className={
+          (scrolled
+            ? "text-gray-100 hover:text-teal-400"
+            : "text-gray-900 hover:text-teal-600"
+          ) +
+          " block w-full text-left py-3 px-3 rounded-lg font-semibold text-base transition"
+        }
+        style={{ fontSize: "1.05rem" }}
+      >
+        {link.label}
+      </button>
+    ))}
+    <div className="flex flex-col gap-3 mt-4">
+      <Link to="/auth">
+        <button className={loginBtnClass + " w-full"} type="button">
+          Se connecter
+        </button>
+      </Link>
+      <SignupButton onClick={() => setSignupOpen(true)} />
+    </div>
+  </div>
+)}
 
       {/* Modale d'inscription */}
-      <Modal open={signupOpen} onClose={() => setSignupOpen(false)} title="Créer votre compte">
-        <SignupForm onSubmit={handleSignup} loading={signupLoading} />
-      </Modal>
+      <Modal open={signupOpen} onClose={() => setSignupOpen(false)} title="">
+  <SignupForm onSubmit={handleSignup} loading={signupLoading} onClose={() => setSignupOpen(false)} />
+</Modal>
+
     </nav>
   );
 };

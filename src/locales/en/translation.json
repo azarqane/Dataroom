@@ -16,7 +16,7 @@
   "hero_title_highlight": "secure",
   "hero_title_end": "Data Room for all your sensitive documents",
   "hero_desc": "Share, collaborate, and secure your confidential documents with our ultra-secure and intuitive Data Room solution.",
-  "hero_cta_trial": "Start free trial",
+  "hero_cta_trial": "Get Started",
   "hero_cta_demo": "Request a demo",
   "hero_feature1": "AES-256 encryption",
   "hero_feature2": "GDPR compliant",
@@ -277,8 +277,58 @@
   "footer_terms": "Terms of use",
   "footer_legal": "Legal notice",
   "footer_trademark": "NeutVault is a registered trademark. All other brands mentioned are the property of their respective owners.",
-  "footer_copyright": "All rights reserved."
+  "footer_copyright": "All rights reserved.",
+
+
+
+  "signup": {
+    "signupTitle": "Sign up",
+    "signupSubtitle1": "Fill out this form to be contacted by our team.",
+    "signupSubtitle2": "",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "John Doe",
+    "company": "Company",
+    "companyPlaceholder": "Company",
+    "email": "Email address",
+    "emailPlaceholder": "example@email.com",
+    "phone": "Phone",
+    "phonePlaceholder": "+1 123 456 7890",
+    "privacyLabel": "By submitting this form, I have read and accept the <1>Privacy Policy</1>.",
+    "submit": "Sign up",
+    "submitting": "Submitting...",
+    "success": "Registration successful!",
+    "close": "Close",
+    "errorFullName": "Invalid full name (letters and spaces only)",
+    "errorFullNameRequired": "Required field",
+    "errorCompanyRequired": "Required field",
+    "errorEmail": "Invalid email",
+    "errorEmailRequired": "Required field",
+    "errorPhone": "Invalid number",
+    "errorPhoneRequired": "Required field",
+    "errorAgree": "You must accept the privacy policy"
+
+
+  },
+
+   "privacy": {
+    "title": "Privacy Policy",
+    "intro": "We value the protection of your personal data. This policy explains how we collect, use, and protect your information.",
+    "dataCollectionTitle": "Data Collected",
+    "dataCollection1": "Information provided during account creation (name, email, company, phone).",
+    "dataCollection2": "Usage data from the service (files, documents, performed actions).",
+    "dataCollection3": "Cookies required for the platform to function properly.",
+    "usageTitle": "Use of Data",
+    "usage": "Your data is used exclusively for account management, service delivery, and user experience improvement. We never share your data without your consent.",
+    "securityTitle": "Security",
+    "security": "We implement technical and organizational measures to protect your data from unauthorized access.",
+    "rightsTitle": "Your Rights",
+    "rights1": "Right to access, modify, or delete your data.",
+    "rights2": "Right to withdraw your consent at any time.",
+    "contactTitle": "Contact",
+    "contact": "For any questions about privacy or your data, contact us at: support@neutvault.com"
+  }
 }
+
 
 
 

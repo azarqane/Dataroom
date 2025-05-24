@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, User, Mail, Building2, Phone } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
 
 type SignupFormData = {
   nomComplet: string;
@@ -11,20 +12,6 @@ type SignupFormData = {
 
 type SignupFormErrors = Partial<Record<keyof SignupFormData, string>>;
 
-function validate(data: SignupFormData): SignupFormErrors {
-  const errors: SignupFormErrors = {};
-  if (!data.nomComplet?.match(/^[A-Za-zÀ-ÖØ-öø-ÿ\s\-']{2,}$/))
-    errors.nomComplet = "Nom complet invalide (lettres et espaces seulement)";
-  if (!data.nomComplet) errors.nomComplet = "Champ requis";
-  if (!data.entreprise) errors.entreprise = "Champ requis";
-  if (!data.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errors.email = "Email invalide";
-  if (!data.email) errors.email = "Champ requis";
-  if (!data.telephone?.match(/^(\+?\d{7,16})$/)) errors.telephone = "Numéro invalide";
-  if (!data.telephone) errors.telephone = "Champ requis";
-  if (!data.agree) errors.agree = "Vous devez accepter la politique de confidentialité";
-  return errors;
-}
-
 export function SignupForm({
   onSubmit,
   loading,
@@ -34,6 +21,22 @@ export function SignupForm({
   loading?: boolean;
   onClose?: () => void;
 }) {
+  const { t, i18n } = useTranslation("translation");
+
+  function validate(data: SignupFormData): SignupFormErrors {
+    const errors: SignupFormErrors = {};
+    if (!data.nomComplet?.match(/^[A-Za-zÀ-ÖØ-öø-ÿ\s\-'\u0600-\u06FF]{2,}$/))
+      errors.nomComplet = t("signup.errorFullName");
+    if (!data.nomComplet) errors.nomComplet = t("signup.errorFullNameRequired");
+    if (!data.entreprise) errors.entreprise = t("signup.errorCompanyRequired");
+    if (!data.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errors.email = t("signup.errorEmail");
+    if (!data.email) errors.email = t("signup.errorEmailRequired");
+    if (!data.telephone?.match(/^(\+?\d{7,16})$/)) errors.telephone = t("signup.errorPhone");
+    if (!data.telephone) errors.telephone = t("signup.errorPhoneRequired");
+    if (!data.agree) errors.agree = t("signup.errorAgree");
+    return errors;
+  }
+
   const [form, setForm] = useState<SignupFormData>({
     nomComplet: "",
     entreprise: "",
@@ -72,19 +75,25 @@ export function SignupForm({
     if (Object.keys(currentErrors).length === 0) onSubmit(form);
   }
 
+  // Pour le RTL si arabe
+  const isAr = i18n.language === "ar";
+
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-gray-100 p-0 relative animate-fadein">
+    <div
+      className="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-gray-100 p-0 relative animate-fadein"
+      dir={isAr ? "rtl" : "ltr"}
+    >
       {/* Header + croix */}
       <div className="flex items-start justify-between px-16 pt-10 pb-5 border-b border-gray-100">
         <div>
-          <h2 className="text-3xl font-extrabold text-teal-600 mb-1">Get started</h2>
-          <p className="text-gray-400 font-medium text-lg mb-1">No initial payments needed.</p>
-          <p className="text-gray-400 font-medium text-lg">30-days full functionality.</p>
+          <h2 className="text-3xl font-extrabold text-teal-600 mb-1">{t("signup.signupTitle")}</h2>
+          <p className="text-gray-400 font-medium text-lg mb-1">{t("signup.signupSubtitle1")}</p>
+          <p className="text-gray-400 font-medium text-lg">{t("signup.signupSubtitle2")}</p>
         </div>
         <button
           type="button"
           className="text-gray-400 hover:text-teal-600 transition"
-          aria-label="Fermer"
+          aria-label={t("signup.close")}
           onClick={onClose}
         >
           <X size={28} />
@@ -96,7 +105,7 @@ export function SignupForm({
         <div className="w-full flex flex-col gap-8">
           {/* NOM COMPLET */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Nom complet</label>
+            <label className="block text-lg text-gray-500 mb-1">{t("signup.fullName")}</label>
             <div className="relative">
               <input
                 className={`form-control w-full rounded-xl border px-5 pl-14 py-4 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition text-xl ${
@@ -106,19 +115,19 @@ export function SignupForm({
                 value={form.nomComplet}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="Jean Dupont"
+                placeholder={t("signup.fullNamePlaceholder")}
                 autoComplete="name"
                 required
               />
               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 w-7 h-7" />
             </div>
             {errors.nomComplet && touched.nomComplet && (
-              <p className="text-xs text-red-500 mt-1">{errors.nomComplet}</p>
+              <p className="text-lg text-red-500 mt-1">{errors.nomComplet}</p>
             )}
           </div>
           {/* ENTREPRISE */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Entreprise</label>
+            <label className="block text-lg text-gray-500 mb-1">{t("signup.company")}</label>
             <div className="relative">
               <input
                 className={`form-control w-full rounded-xl border px-5 pl-14 py-4 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition text-xl ${
@@ -128,19 +137,19 @@ export function SignupForm({
                 value={form.entreprise}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="Apple Inc."
+                placeholder={t("signup.companyPlaceholder")}
                 autoComplete="organization"
                 required
               />
               <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 w-7 h-7" />
             </div>
             {errors.entreprise && touched.entreprise && (
-              <p className="text-xs text-red-500 mt-1">{errors.entreprise}</p>
+              <p className="text-lg text-red-500 mt-1">{errors.entreprise}</p>
             )}
           </div>
           {/* EMAIL */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Email</label>
+            <label className="block text-lg text-gray-500 mb-1">{t("signup.email")}</label>
             <div className="relative">
               <input
                 type="email"
@@ -151,19 +160,19 @@ export function SignupForm({
                 value={form.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="exemple@email.com"
+                placeholder={t("signup.emailPlaceholder")}
                 autoComplete="email"
                 required
               />
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 w-7 h-7" />
             </div>
             {errors.email && touched.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+              <p className="text-lg text-red-500 mt-1">{errors.email}</p>
             )}
           </div>
           {/* TÉLÉPHONE */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Téléphone</label>
+            <label className="block text-lg text-gray-500 mb-1">{t("signup.phone")}</label>
             <div className="relative">
               <input
                 type="tel"
@@ -174,14 +183,14 @@ export function SignupForm({
                 value={form.telephone}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="+33 6 12 34 56 78"
+                placeholder={t("signup.phonePlaceholder")}
                 autoComplete="tel"
                 required
               />
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 w-7 h-7" />
             </div>
             {errors.telephone && touched.telephone && (
-              <p className="text-xs text-red-500 mt-1">{errors.telephone}</p>
+              <p className="text-lg text-red-500 mt-1">{errors.telephone}</p>
             )}
           </div>
           {/* POLITIQUE CONFIDENTIALITÉ */}
@@ -194,16 +203,16 @@ export function SignupForm({
               className="mt-1 accent-teal-500"
               required
             />
-            <label className="text-xs text-gray-500">
-              En soumettant ce formulaire, j’ai lu et j’accepte la{" "}
-              <a href="/privacy" target="_blank" className="underline hover:text-teal-600">
-                Politique de confidentialité
-              </a>
-              .
+            <label className="text-lg text-gray-500">
+              <Trans
+                i18nKey="signup.privacyLabel"
+                t={t}
+                components={[<></>, <a href="/privacy" target="_blank" className="underline hover:text-teal-600"></a>]}
+              />
             </label>
           </div>
           {errors.agree && touched.agree && (
-            <p className="text-xs text-red-500">{errors.agree}</p>
+            <p className="text-lg text-red-500">{errors.agree}</p>
           )}
           {/* SUBMIT */}
           <button
@@ -211,11 +220,11 @@ export function SignupForm({
             className="btn btn-primary w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-700 text-white font-bold text-xl py-4 rounded-2xl mt-4 shadow transition-all disabled:opacity-60"
             disabled={loading}
           >
-            {loading ? "Envoi..." : "Get started"}
+            {loading ? t("signup.submitting") : t("signup.submit")}
           </button>
           {submitted && Object.keys(errors).length === 0 && !loading && (
             <p className="text-green-600 text-center text-base mt-3 animate-fadein">
-              Inscription réussie !
+              {t("signup.success")}
             </p>
           )}
         </div>

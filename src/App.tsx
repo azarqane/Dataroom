@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
@@ -16,10 +16,24 @@ import { Toaster } from 'react-hot-toast';
 import DataRoomPage from './pages/DataRoomPage';
 import AccessDataRoom from "./pages/access/AccessDataRoom";
 import { useTranslation } from 'react-i18next';
+import PrivacyPage from "./pages/PrivacyPage";
+import { Modal } from "./components/Modal";
+import { SignupForm } from "./components/SignupForm";
 
 function AppWrapper() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
+  const [signupOpen, setSignupOpen] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  function handleSignup(formData: any) {
+    setSignupLoading(true);
+    setTimeout(() => {
+      setSignupLoading(false);
+      setSignupOpen(false);
+      // Tu peux ajouter un toast ici
+    }, 1500);
+  }
 
   useEffect(() => {
     if (location.pathname === '/' && location.hash) {
@@ -41,7 +55,10 @@ function AppWrapper() {
         <Route path="/access/:token" element={<AccessDataRoom />} />
         <Route path="/" element={
           <main>
-            <section id="hero"><Hero /></section>
+            <section id="hero">
+              {/* Passe la fonction d'ouverture à Hero */}
+              <Hero onOpenSignup={() => setSignupOpen(true)} />
+            </section>
             <section id="features"><Features /></section>
             <section id="security"><Security /></section>
             <section id="Testimonials" className="scroll-mt-24"><Testimonials /></section>
@@ -52,7 +69,18 @@ function AppWrapper() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dataroom/:id" element={<DataRoomPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
+      
+      {/* Modale signup centrale */}
+      <Modal open={signupOpen} onClose={() => setSignupOpen(false)} title="">
+        <SignupForm
+          onSubmit={handleSignup}
+          loading={signupLoading}
+          onClose={() => setSignupOpen(false)}
+        />
+      </Modal>
+
       {isLanding && <Footer />}
       <ScrollToTop />
       <Toaster
@@ -90,7 +118,6 @@ function App() {
     }
   }, [i18n.language]);
 
-  // *** C’est ici qu’il faut retourner l’app ***
   return (
     <Router>
       <AppWrapper />

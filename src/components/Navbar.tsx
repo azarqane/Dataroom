@@ -12,7 +12,7 @@ const languages = [
   { code: "ar", label: "AR" }
 ];
 
-export const Navbar = () => {
+export const Navbar = ({ onOpenSignup }: { onOpenSignup: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);

@@ -3,8 +3,8 @@ import { Button } from './Button';
 import { Shield, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
-export const Hero = () => {
+import { Rocket, Calendar } from "lucide-react"; // Ajoute en haut du fichier
+export const Hero = ({ onOpenSignup }: { onOpenSignup: () => void }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -34,13 +34,25 @@ export const Hero = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button variant="primary" size="lg" onClick={() => navigate('/auth')}>
-                  {t("hero_cta_trial")}
-                </Button>
-                <Button variant="outline" size="lg" onClick={() => navigate('/auth')}>
-                  {t("hero_cta_demo")}
-                </Button>
-              </div>
+  {/* Essai gratuit / démarrer */}
+  <button
+    onClick={onOpenSignup}
+    className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-700 shadow-xl text-white text-xl font-extrabold tracking-tight transition-all duration-200 focus:ring-4 focus:ring-teal-200 focus:outline-none active:scale-95 animate-fadein"
+    style={{ minWidth: 180 }}
+  >
+    <Rocket className="w-6 h-6 -ml-1" />
+    {t("hero_cta_trial")}
+  </button>
+  {/* Démo */}
+  <button
+    onClick={onOpenSignup}
+    className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white border-2 border-teal-400 text-teal-600 hover:bg-teal-50 hover:border-teal-600 shadow-lg text-xl font-extrabold tracking-tight transition-all duration-200 focus:ring-4 focus:ring-teal-100 focus:outline-none active:scale-95 animate-fadein"
+    style={{ minWidth: 180 }}
+  >
+    <Calendar className="w-6 h-6 -ml-1" />
+    {t("hero_cta_demo")}
+  </button>
+</div>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center">

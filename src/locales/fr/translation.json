@@ -6,7 +6,6 @@
   "testimonials": "Témoignages",
   "faq": "FAQ",
   "login": "Connexion",
-  "signup": "Créer un compte",
   "dashboard": "Tableau de bord",
   "welcome": "Bienvenue sur NeutVault",
   "home": "Accueil",
@@ -65,7 +64,7 @@
   "hero_title_highlight": "sécurisée",
   "hero_title_end": "pour tous vos documents sensibles",
   "hero_desc": "Partagez, collaborez et sécurisez vos documents confidentiels avec notre solution de Data Room ultra-sécurisée et intuitive.",
-  "hero_cta_trial": "Démarrer l'essai gratuit",
+  "hero_cta_trial": "Démarrer",
   "hero_cta_demo": "Demander une démo",
   "hero_feature1": "Chiffrement AES-256",
   "hero_feature2": "Conforme RGPD",
@@ -278,8 +277,55 @@
   "footer_terms": "Conditions d'utilisation",
   "footer_legal": "Mentions légales",
   "footer_trademark": "NeutVault est une marque déposée. Toutes les autres marques mentionnées sont la propriété de leurs détenteurs respectifs.",
-  "footer_copyright": "Tous droits réservés."
+  "footer_copyright": "Tous droits réservés.",
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "intro": "Nous accordons une grande importance à la protection de vos données personnelles. Cette politique explique comment nous collectons, utilisons et protégeons vos informations.",
+    "dataCollectionTitle": "Données collectées",
+    "dataCollection1": "Informations fournies lors de la création d’un compte (nom, email, entreprise, téléphone).",
+    "dataCollection2": "Données d’usage du service (fichiers, documents, actions effectuées).",
+    "dataCollection3": "Cookies nécessaires au bon fonctionnement de la plateforme.",
+    "usageTitle": "Utilisation des données",
+    "usage": "Vos données sont utilisées exclusivement pour la gestion de votre compte, la fourniture du service et l’amélioration de l’expérience utilisateur. Nous ne partageons jamais vos données sans votre consentement.",
+    "securityTitle": "Sécurité",
+    "security": "Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données contre tout accès non autorisé.",
+    "rightsTitle": "Vos droits",
+    "rights1": "Droit d’accès, de rectification et de suppression de vos données.",
+    "rights2": "Droit de retirer votre consentement à tout moment.",
+    "contactTitle": "Contact",
+    "contact": "Pour toute question relative à la confidentialité ou à vos données, contactez-nous à l’adresse : support@neutvault.com"},
+    
+    "signup": {
+    "signupTitle": "Inscription",
+    "signupSubtitle1": "Remplissez ce formulaire pour être contacté par notre équipe.",
+    "signupSubtitle2": "",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "Jean Dupont",
+    "company": "Entreprise",
+    "companyPlaceholder": "Entreprise",
+    "email": "Adresse email",
+    "emailPlaceholder": "exemple@email.com",
+    "phone": "Téléphone",
+    "phonePlaceholder": "+33 6 12 34 56 78",
+    "privacyLabel": "En soumettant ce formulaire, j’ai lu et j’accepte la <1>Politique de confidentialité</1>.",
+    "submit": "S'inscrire",
+    "submitting": "Envoi...",
+    "success": "Inscription réussie !",
+    "close": "Fermer",
+    "errorFullName": "Nom complet invalide (lettres et espaces seulement)",
+    "errorFullNameRequired": "Champ requis",
+    "errorCompanyRequired": "Champ requis",
+    "errorEmail": "Email invalide",
+    "errorEmailRequired": "Champ requis",
+    "errorPhone": "Numéro invalide",
+    "errorPhoneRequired": "Champ requis",
+    "errorAgree": "Vous devez accepter la politique de confidentialité"
+  }
+
+  
+  
 }
+
 
 
 
